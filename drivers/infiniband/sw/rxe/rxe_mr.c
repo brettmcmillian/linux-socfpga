@@ -31,6 +31,7 @@
  * SOFTWARE.
  */
 
+#include "linux/highmem.h"
 #include "rxe.h"
 #include "rxe_loc.h"
 
@@ -94,7 +95,15 @@ static void rxe_mem_init(int access, struct rxe_mem *mem)
 void rxe_mem_cleanup(struct rxe_pool_entry *arg)
 {
 	struct rxe_mem *mem = container_of(arg, typeof(*mem), pelem);
-	int i;
+	int i, entry;
+	struct scatterlist *sg;
+
+	if (mem->kmap_occurred) {
+		for_each_sg(mem->umem->sg_head.sgl, sg,
+			    mem->umem->nmap, entry) {
+			kunmap(sg_page(sg));
+		}
+	}
 
 	if (mem->umem)
 		ib_umem_release(mem->umem);
@@ -200,12 +209,13 @@ int rxe_mem_init_user(struct rxe_dev *rxe, struct rxe_pd *pd, u64 start,
 		buf = map[0]->buf;
 
 		for_each_sg(umem->sg_head.sgl, sg, umem->nmap, entry) {
-			vaddr = page_address(sg_page(sg));
+			vaddr = kmap(sg_page(sg));
 			if (!vaddr) {
 				pr_warn("null vaddr\n");
 				err = -ENOMEM;
 				goto err1;
 			}
+			mem->kmap_occurred = 1;
 
 			buf->addr = (uintptr_t)vaddr;
 			buf->size = BIT(umem->page_shift);
