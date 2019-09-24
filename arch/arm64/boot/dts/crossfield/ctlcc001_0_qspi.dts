@@ -17,7 +17,7 @@
 #include "socfpga_stratix10.dtsi"
 
 / {
-	model = "SoCFPGA Stratix 10 SoCDK";
+	model = "Crossfield 6U VPX Stratix 10 SX Instrumentation Gateway";
 
 	aliases {
 		serial0 = &uart0;
@@ -107,6 +107,7 @@
 };
 
 &qspi {
+	status = "okay";
 	flash@0 {
 		#address-cells = <1>;
 		#size-cells = <1>;
