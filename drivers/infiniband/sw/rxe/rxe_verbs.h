@@ -347,6 +347,8 @@ struct rxe_mem {
 	u32			num_map;
 
 	struct rxe_map		**map;
+
+	int			kmap_occurred;
 };
 
 struct rxe_mc_grp {
