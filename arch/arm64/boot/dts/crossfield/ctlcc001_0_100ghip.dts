@@ -23,7 +23,7 @@
 		serial0 = &uart0;
 		ethernet0 = &gmac0;
 		ethernet1 = &gmac1;
-		ethernet2 = &100ghip_0_s10;
+		ethernet2 = &ethhip_0_s10;
 	};
 
 	chosen {
@@ -104,9 +104,9 @@
         };
 };
 
-&100ghip_0_s10 {
+&ethhip_0_s10 {
 	status = "okay";
-}
+};
 
 /*
 &mmc {
