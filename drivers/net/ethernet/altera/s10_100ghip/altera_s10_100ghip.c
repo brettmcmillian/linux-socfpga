@@ -79,7 +79,7 @@ MODULE_PARM_DESC(dma_tx_num, "Number of descriptors in the TX list");
 /* Allow network stack to resume queueing packets after we've
  * finished transmitting at least 1/4 of the packets in the queue.
  */
-#define HIP_TX_THRESH(x)	(x->tx_ring_size / 4)
+#define S10_100GHIP_TX_THRESH(x)	(x->tx_ring_size / 4)
 
 #define TXQUEUESTOP_THRESHHOLD	2
 
@@ -89,7 +89,7 @@ static const struct of_device_id altera_s10_100ghip_ids[];
 
 static inline u32 s10_100ghip_tx_avail(struct altera_s10_100ghip_private *priv)
 {
-
+	return priv->tx_cons + priv->tx_ring_size - priv->tx_prod - 1;
 }
 
 /*
@@ -97,7 +97,7 @@ static inline u32 s10_100ghip_tx_avail(struct altera_s10_100ghip_private *priv)
  */
 static u16 s10_100ghip_pcs_read(struct altera_s10_100ghip_private *priv, int regnum)
 {
-
+	return 0x0;
 }
 
 static void s10_100ghip_pcs_write(struct altera_s10_100ghip_private *priv, int regnum,
@@ -109,7 +109,7 @@ static void s10_100ghip_pcs_write(struct altera_s10_100ghip_private *priv, int r
 /* Check PCS scratch memory */
 static int s10_100ghip_pcs_scratch_test(struct altera_s10_100ghip_private *priv, u16 value)
 {
-
+	return 0;
 }
 
 static int s10_100ghip_init_rx_buffer(struct altera_s10_100ghip_private *priv,
@@ -632,7 +632,7 @@ static void s10_100ghip_set_rx_mode(struct net_device *dev)
 static int init_100ghip_pcs(struct net_device *dev)
 {
 	//For now, just let the PCS come up in the default state.
-	
+	return 0;
 }
 
 /* Open and initialize the interface
@@ -844,10 +844,9 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 	struct resource *dma_res;
 	struct altera_s10_100ghip_private *priv;
 	const unsigned char *macaddr;
-	void __iomem *descmap;
 	const struct of_device_id *of_id = NULL;
 
-	ndev = alloc_etherdev(sizeof(struct altera_100ghip_private));
+	ndev = alloc_etherdev(sizeof(struct altera_s10_100ghip_private));
 	if (!ndev) {
 		dev_err(&pdev->dev, "Could not allocate network device\n");
 		return -ENODEV;
@@ -866,7 +865,7 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 		priv->dmaops = (struct altera_dmaops *)of_id->data;
 
 	if (priv->dmaops &&
-		   priv->dmaops->altera_dtype == ALTERA_DTYPE_MSGDMA) {
+		   priv->dmaops->altera_dtype == ALTERA_DTYPE_S10_MSGDMA) {
 		ret = request_and_map(pdev, "rx_resp", &dma_res,
 				      &priv->rx_dma_resp);
 		if (ret)
@@ -907,7 +906,7 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 		goto err_free_netdev;
 
 	ret = request_and_map(pdev, "phy_csr", &phy,
-			      (void __iomem **)&priv-phy_dev);
+			      (void __iomem **)&priv->phy_dev);
 	if (ret)
 		goto err_free_netdev;
 
@@ -1008,7 +1007,10 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 	ndev->mem_start = txmac->start;
 	ndev->mem_end = txmac->end;
 	ndev->netdev_ops = &altera_s10_100ghip_netdev_ops;
-	altera_s10_100ghip_set_ethtool_ops(ndev);
+	/* 
+	 * Need to add this back in to enable ethtool!!!!!!!!!!!
+	 */
+	/* altera_s10_100ghip_set_ethtool_ops(ndev); */
 
 	altera_s10_100ghip_netdev_ops.ndo_set_rx_mode = s10_100ghip_set_rx_mode;
 
@@ -1040,15 +1042,20 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, ndev);
 
-	priv->revision = ioread32(&priv->mac_dev->megacore_revision);
+	priv->revision = ioread32(&priv->txmac_dev->revision_id);
 
 	if (netif_msg_probe(priv))
 		dev_info(&pdev->dev, "Intel 100G MAC+PCS version %d.%d at 0x%08lx irq %d/%d\n",
 			 (priv->revision >> 8) & 0xff,
 			 priv->revision & 0xff,
-			 (unsigned long) control_port->start, priv->rx_irq,
+			 (unsigned long) txmac->start, priv->rx_irq,
 			 priv->tx_irq);
 
+err_register_netdev:
+	netif_napi_del(&priv->napi);
+err_free_netdev:
+	free_netdev(ndev);
+	return ret;
 }
 
 /* Remove Altera 100G HIP MAC device

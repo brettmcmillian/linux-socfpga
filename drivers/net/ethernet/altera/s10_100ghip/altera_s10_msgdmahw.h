@@ -92,19 +92,19 @@ struct msgdma_csr {
 	u32 status;		/* Read/Clear */
 	u32 control;		/* Read/Write */
 	u32 rw_fill_level;	/* bit 31:16 - write fill level
-				 		 * bit 15:0  - read fill level
-				 		 */
+				 * bit 15:0  - read fill level
+				 */
 	u32 resp_fill_level;	/* bit 15:0 */
 	u32 rw_seq_num;		/* bit 31:16 - write sequence number
-				 		 * bit 15:0  - read sequence number
-				 		 */
+				 * bit 15:0  - read sequence number
+				 */
 	u32 comp_cfg1;		/* Component Configuration 1 */
 	u32 comp_cfg2;		/* Component Configuration 2 */
 	u32 comp_type_ver;	/* bit 15:8 - Component Type 
-						 * 			  Fixed: 0xDA
-						 * bit 7:0  - Component Version
-						 * 			  Fixed: 0x01
-						 * /
+				 * 			  Fixed: 0xDA
+				 * bit 7:0  - Component Version
+				 * 			  Fixed: 0x01
+				 */
 };
 
 /* mSGDMA CSR status register bit definitions */

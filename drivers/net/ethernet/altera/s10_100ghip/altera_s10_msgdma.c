@@ -21,26 +21,26 @@
  */
 
 #include <linux/netdevice.h>
-#include "altera_utils.h"
+#include "altera_s10_utils.h"
 #include "altera_s10_100ghip.h"
 #include "altera_s10_msgdmahw.h"
 #include "altera_s10_msgdma.h"
 
 /* No initialization work to do for MSGDMA */
-int msgdma_initialize(struct altera_s10_100ghip_private *priv)
+int s10_msgdma_initialize(struct altera_s10_100ghip_private *priv)
 {
 	return 0;
 }
 
-void msgdma_uninitialize(struct altera_s10_100ghip_private *priv)
+void s10_msgdma_uninitialize(struct altera_s10_100ghip_private *priv)
 {
 }
 
-void msgdma_start_rxdma(struct altera_s10_100ghip_private *priv)
+void s10_msgdma_start_rxdma(struct altera_s10_100ghip_private *priv)
 {
 }
 
-void msgdma_reset(struct altera_s10_100ghip_private *priv)
+void s10_msgdma_reset(struct altera_s10_100ghip_private *priv)
 {
 	int counter;
 
@@ -88,42 +88,42 @@ void msgdma_reset(struct altera_s10_100ghip_private *priv)
 	csrwr32(MSGDMA_CSR_STAT_MASK, priv->tx_dma_csr, msgdma_csroffs(status));
 }
 
-void msgdma_disable_rxirq(struct altera_s10_100ghip_private *priv)
+void s10_msgdma_disable_rxirq(struct altera_s10_100ghip_private *priv)
 {
 	s10_clear_bit(priv->rx_dma_csr, msgdma_csroffs(control),
 		      MSGDMA_CSR_CTL_GLOBAL_INTR);
 }
 
-void msgdma_enable_rxirq(struct altera_s10_100ghip_private_private *priv)
+void s10_msgdma_enable_rxirq(struct altera_s10_100ghip_private *priv)
 {
 	s10_set_bit(priv->rx_dma_csr, msgdma_csroffs(control),
 		    MSGDMA_CSR_CTL_GLOBAL_INTR);
 }
 
-void msgdma_disable_txirq(struct altera_s10_100ghip_private *priv)
+void s10_msgdma_disable_txirq(struct altera_s10_100ghip_private *priv)
 {
 	s10_clear_bit(priv->tx_dma_csr, msgdma_csroffs(control),
 		      MSGDMA_CSR_CTL_GLOBAL_INTR);
 }
 
-void msgdma_enable_txirq(struct altera_s10_100ghip_private *priv)
+void s10_msgdma_enable_txirq(struct altera_s10_100ghip_private *priv)
 {
 	s10_set_bit(priv->tx_dma_csr, msgdma_csroffs(control),
 		    MSGDMA_CSR_CTL_GLOBAL_INTR);
 }
 
-void msgdma_clear_rxirq(struct altera_s10_100ghip_private *priv)
+void s10_msgdma_clear_rxirq(struct altera_s10_100ghip_private *priv)
 {
 	csrwr32(MSGDMA_CSR_STAT_IRQ, priv->rx_dma_csr, msgdma_csroffs(status));
 }
 
-void msgdma_clear_txirq(struct altera_s10_100ghip_private *priv)
+void s10_msgdma_clear_txirq(struct altera_s10_100ghip_private *priv)
 {
 	csrwr32(MSGDMA_CSR_STAT_IRQ, priv->tx_dma_csr, msgdma_csroffs(status));
 }
 
 /* return 0 to indicate transmit is pending */
-int msgdma_tx_buffer(struct altera_s10_100ghip_private *priv, struct s10_100ghip_buffer *buffer)
+int s10_msgdma_tx_buffer(struct altera_s10_100ghip_private *priv, struct s10_100ghip_buffer *buffer)
 {
 	csrwr32(lower_32_bits(buffer->dma_addr), priv->tx_dma_desc,
 		msgdma_descroffs(read_addr_lo));
@@ -140,7 +140,7 @@ int msgdma_tx_buffer(struct altera_s10_100ghip_private *priv, struct s10_100ghip
 	return 0;
 }
 
-u32 msgdma_tx_completions(struct altera_s10_100ghip_private *priv)
+u32 s10_msgdma_tx_completions(struct altera_s10_100ghip_private *priv)
 {
 	u32 ready = 0;
 	u32 inuse;
@@ -166,7 +166,7 @@ u32 msgdma_tx_completions(struct altera_s10_100ghip_private *priv)
 
 /* Put buffer to the mSGDMA RX FIFO
  */
-void msgdma_add_rx_desc(struct altera_s10_100ghip_private *priv,
+void s10_msgdma_add_rx_desc(struct altera_s10_100ghip_private *priv,
 			struct s10_100ghip_buffer *rxbuffer)
 {
 	u32 len = priv->rx_dma_buf_sz;
@@ -193,7 +193,7 @@ void msgdma_add_rx_desc(struct altera_s10_100ghip_private *priv,
 /* status is returned on upper 16 bits,
  * length is returned in lower 16 bits
  */
-u32 msgdma_rx_status(struct altera_s10_100ghip_private *priv)
+u32 s10_msgdma_rx_status(struct altera_s10_100ghip_private *priv)
 {
 	u32 rxstatus = 0;
 	u32 pktlength;

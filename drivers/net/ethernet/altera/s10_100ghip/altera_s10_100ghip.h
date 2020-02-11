@@ -127,8 +127,12 @@
 #define SGMII_PCS_IF_MODE			0x14
 #define SGMII_PCS_DIS_READ_TO		0x15
 #define SGMII_PCS_READ_TO			0x16
-#define SGMII_PCS_SW_RESET_TIMEOUT 	100 /* usecs */
+#define SGMII_PCS_SW_RESET_TIMEOUT 	100 
 */
+
+#define TX_MAC_EN_SADDR_INSERT	BIT(3)
+#define TX_MAC_DISABLE_TX_MAC	BIT(2)
+#define TX_MAC_DISABLE_TXVLAN	BIT(1)
 
 struct altera_s10_100ghip_phy {
     u32 revision_id;
@@ -146,7 +150,7 @@ struct altera_s10_100ghip_phy {
     u32 alignment_marker_lock;
     u32 ber_count;
     u32 pcs_virtual_lane0;
-    u32 pcs virtual_lane1;
+    u32 pcs_virtual_lane1;
     u32 pcs_virtual_lane2;
     u32 pcs_virtual_lane3;
     u32 recovered_clock_freq;
@@ -227,8 +231,8 @@ struct s10_100ghip_buffer {
 
 struct altera_s10_100ghip_private;
 
-#define ALTERA_DTYPE_SGDMA 1
-#define ALTERA_DTYPE_MSGDMA 2
+#define ALTERA_DTYPE_S10_SGDMA 1
+#define ALTERA_DTYPE_S10_MSGDMA 2
 
 /* standard DMA interface for MSGDMA */
 struct altera_dmaops {

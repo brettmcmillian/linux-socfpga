@@ -23,19 +23,19 @@
 #ifndef __ALTERA_S10_MSGDMA_H__
 #define __ALTERA_S10_MSGDMA_H__
 
-void msgdma_reset(struct altera_s10_100ghip_private *);
-void msgdma_enable_txirq(struct altera_s10_100ghip_private *);
-void msgdma_enable_rxirq(struct altera_s10_100ghip_private *);
-void msgdma_disable_rxirq(struct altera_s10_100ghip_private *);
-void msgdma_disable_txirq(struct altera_s10_100ghip_private *);
-void msgdma_clear_rxirq(struct altera_s10_100ghip_private *);
-void msgdma_clear_txirq(struct altera_s10_100ghip_private *);
-u32 msgdma_tx_completions(struct altera_s10_100ghip_private *);
-void msgdma_add_rx_desc(struct altera_s10_100ghip_private *, struct s10_100ghip_buffer *);
-int msgdma_tx_buffer(struct altera_s10_100ghip_private *, struct s10_100ghip_buffer *);
-u32 msgdma_rx_status(struct altera_s10_100ghip_private *);
-int msgdma_initialize(struct altera_s10_100ghip_private *);
-void msgdma_uninitialize(struct altera_s10_100ghip_private *);
-void msgdma_start_rxdma(struct altera_s10_100ghip_private *);
+void s10_msgdma_reset(struct altera_s10_100ghip_private *);
+void s10_msgdma_enable_txirq(struct altera_s10_100ghip_private *);
+void s10_msgdma_enable_rxirq(struct altera_s10_100ghip_private *);
+void s10_msgdma_disable_rxirq(struct altera_s10_100ghip_private *);
+void s10_msgdma_disable_txirq(struct altera_s10_100ghip_private *);
+void s10_msgdma_clear_rxirq(struct altera_s10_100ghip_private *);
+void s10_msgdma_clear_txirq(struct altera_s10_100ghip_private *);
+u32 s10_msgdma_tx_completions(struct altera_s10_100ghip_private *);
+void s10_msgdma_add_rx_desc(struct altera_s10_100ghip_private *, struct s10_100ghip_buffer *);
+int s10_msgdma_tx_buffer(struct altera_s10_100ghip_private *, struct s10_100ghip_buffer *);
+u32 s10_msgdma_rx_status(struct altera_s10_100ghip_private *);
+int s10_msgdma_initialize(struct altera_s10_100ghip_private *);
+void s10_msgdma_uninitialize(struct altera_s10_100ghip_private *);
+void s10_msgdma_start_rxdma(struct altera_s10_100ghip_private *);
 
 #endif /*  __ALTERA_S10_MSGDMA_H__ */
