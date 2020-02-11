@@ -1,3 +1,15 @@
+#
+# Altera Network Device Configuration
+# 
+
+config NET_VENDOR_ALTERA
+	bool "Altera network devices"
+	default y
+	---help---
+	Altera FPGA SoC network drivers.
+
+if NET_VENDOR_ALTERA
+
 config ALTERA_TSE
 	tristate "Altera Triple-Speed Ethernet MAC support"
 	depends on HAS_DMA
