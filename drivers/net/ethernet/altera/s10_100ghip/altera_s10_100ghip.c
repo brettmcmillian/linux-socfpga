@@ -195,7 +195,7 @@ static int alloc_init_skbufs(struct altera_s10_100ghip_private *priv)
 	return 0;
 err_init_rx_buffers:
 	while (--i >= 0)
-		tse_free_rx_buffer(priv, &priv->rx_ring[i]);
+		s10_100ghip_free_rx_buffer(priv, &priv->rx_ring[i]);
 	kfree(priv->tx_ring);
 err_tx_ring:
 	kfree(priv->rx_ring);
@@ -212,9 +212,9 @@ static void free_skbufs(struct net_device *dev)
 
 	/* Release the DMA TX/RX socket buffers */
 	for (i = 0; i < rx_descs; i++)
-		tse_free_rx_buffer(priv, &priv->rx_ring[i]);
+		s10_100ghip_free_rx_buffer(priv, &priv->rx_ring[i]);
 	for (i = 0; i < tx_descs; i++)
-		tse_free_tx_buffer(priv, &priv->tx_ring[i]);
+		s10_100ghip_free_tx_buffer(priv, &priv->tx_ring[i]);
 
 
 	kfree(priv->tx_ring);
@@ -232,7 +232,7 @@ static inline void s10_100ghip_rx_refill(struct altera_s10_100ghip_private *priv
 			priv->rx_prod++) {
 		entry = priv->rx_prod % rxsize;
 		if (likely(priv->rx_ring[entry].skb == NULL)) {
-			ret = tse_init_rx_buffer(priv, &priv->rx_ring[entry],
+			ret = s10_100ghip_init_rx_buffer(priv, &priv->rx_ring[entry],
 				priv->rx_dma_buf_sz);
 			if (unlikely(ret != 0))
 				break;
@@ -283,7 +283,7 @@ static int s10_100ghip_rx(struct altera_s10_100ghip_private *priv, int limit)
 				   "RCV pktstatus %08X pktlength %08X\n",
 				   pktstatus, pktlength);
 
-		/* DMA trasfer from TSE starts with 2 aditional bytes for
+		/* DMA transfer from 100G HIP starts with 2 aditional bytes for
 		 * IP payload alignment. Status returned by get_rx_status()
 		 * contains DMA transfer length. Packet is 2 bytes shorter.
 		 */
@@ -314,7 +314,7 @@ static int s10_100ghip_rx(struct altera_s10_100ghip_private *priv, int limit)
 				       16, 1, skb->data, pktlength, true);
 		}
 
-		tse_rx_vlan(priv->dev, skb);
+		s10_100ghip_rx_vlan(priv->dev, skb);
 
 		skb->protocol = eth_type_trans(skb, priv->dev);
 		skb_checksum_none_assert(skb);
@@ -326,7 +326,7 @@ static int s10_100ghip_rx(struct altera_s10_100ghip_private *priv, int limit)
 
 		entry = next_entry;
 
-		tse_rx_refill(priv);
+		s10_100ghip_rx_refill(priv);
 	}
 
 	return count;
@@ -339,7 +339,7 @@ static int s10_100ghip_tx_complete(struct altera_s10_100ghip_private *priv)
 	unsigned int txsize = priv->tx_ring_size;
 	u32 ready;
 	unsigned int entry;
-	struct tse_buffer *tx_buff;
+	struct s10_100ghip_buffer *tx_buff;
 	int txcomplete = 0;
 
 	spin_lock(&priv->tx_lock);
@@ -358,7 +358,7 @@ static int s10_100ghip_tx_complete(struct altera_s10_100ghip_private *priv)
 		if (likely(tx_buff->skb))
 			priv->dev->stats.tx_packets++;
 
-		tse_free_tx_buffer(priv, tx_buff);
+		s10_100ghip_free_tx_buffer(priv, tx_buff);
 		priv->tx_cons++;
 
 		txcomplete++;
@@ -366,9 +366,9 @@ static int s10_100ghip_tx_complete(struct altera_s10_100ghip_private *priv)
 	}
 
 	if (unlikely(netif_queue_stopped(priv->dev) &&
-		     tse_tx_avail(priv) > TSE_TX_THRESH(priv))) {
+		     s10_100ghip_tx_avail(priv) > S10_100GHIP_TX_THRESH(priv))) {
 		if (netif_queue_stopped(priv->dev) &&
-		    tse_tx_avail(priv) > TSE_TX_THRESH(priv)) {
+		    s10_100ghip_tx_avail(priv) > S10_100GHIP_TX_THRESH(priv)) {
 			if (netif_msg_tx_done(priv))
 				netdev_dbg(priv->dev, "%s: restart transmit\n",
 					   __func__);
@@ -390,9 +390,9 @@ static int s10_100ghip_poll(struct napi_struct *napi, int budget)
 	int rxcomplete = 0;
 	unsigned long int flags;
 
-	tse_tx_complete(priv);
+	s10_100ghip_tx_complete(priv);
 
-	rxcomplete = tse_rx(priv, budget);
+	rxcomplete = s10_100ghip_rx(priv, budget);
 
 	if (rxcomplete < budget) {
 
@@ -453,7 +453,7 @@ static int s10_100ghip_start_xmit(struct sk_buff *skb, struct net_device *dev)
 	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
 	unsigned int txsize = priv->tx_ring_size;
 	unsigned int entry;
-	struct tse_buffer *buffer = NULL;
+	struct s10_100ghip_buffer *buffer = NULL;
 	int nfrags = skb_shinfo(skb)->nr_frags;
 	unsigned int nopaged_len = skb_headlen(skb);
 	enum netdev_tx ret = NETDEV_TX_OK;
@@ -461,7 +461,7 @@ static int s10_100ghip_start_xmit(struct sk_buff *skb, struct net_device *dev)
 
 	spin_lock_bh(&priv->tx_lock);
 
-	if (unlikely(tse_tx_avail(priv) < nfrags + 1)) {
+	if (unlikely(s10_100ghip_tx_avail(priv) < nfrags + 1)) {
 		if (!netif_queue_stopped(dev)) {
 			netif_stop_queue(dev);
 			/* This is a hard error, log it. */
@@ -496,7 +496,7 @@ static int s10_100ghip_start_xmit(struct sk_buff *skb, struct net_device *dev)
 	priv->tx_prod++;
 	dev->stats.tx_bytes += skb->len;
 
-	if (unlikely(tse_tx_avail(priv) <= TXQUEUESTOP_THRESHHOLD)) {
+	if (unlikely(s10_100ghip_tx_avail(priv) <= TXQUEUESTOP_THRESHHOLD)) {
 		if (netif_msg_hw(priv))
 			netdev_dbg(priv->dev, "%s: stop transmitted packets\n",
 				   __func__);
@@ -644,7 +644,7 @@ static int s10_100ghip_open(struct net_device *dev)
 	int i;
 	unsigned long int flags;
 
-	/* Reset and configure TSE MAC and probe associated PHY */
+	/* Reset and configure 100G HIP MAC and probe associated PHY */
 	ret = priv->dmaops->init_dma(priv);
 	if (ret != 0) {
 		netdev_err(dev, "Cannot initialize DMA\n");
@@ -656,14 +656,14 @@ static int s10_100ghip_open(struct net_device *dev)
 			    dev->dev_addr);
 
 	if ((priv->revision < 0xd00) || (priv->revision > 0xe00))
-		netdev_warn(dev, "TSE revision %x\n", priv->revision);
+		netdev_warn(dev, "100G HIP revision %x\n", priv->revision);
 
 	spin_lock(&priv->mac_cfg_lock);
 	/* no-op if MAC not operating in SGMII mode*/
 	ret = init_100ghip_pcs(dev);
 	if (ret) {
 		netdev_err(dev,
-			   "Cannot init the SGMII PCS (error: %d)\n", ret);
+			   "Cannot init the 100G HIP PCS (error: %d)\n", ret);
 		spin_unlock(&priv->mac_cfg_lock);
 		goto phy_error;
 	}
@@ -734,7 +734,7 @@ static int s10_100ghip_open(struct net_device *dev)
 
 	/* Start MAC Rx/Tx */
 	spin_lock(&priv->mac_cfg_lock);
-	tse_set_mac(priv, true);
+	s10_100ghip_set_mac(priv, true);
 	spin_unlock(&priv->mac_cfg_lock);
 
 	return 0;
@@ -748,7 +748,7 @@ phy_error:
 	return ret;
 }
 
-/* Stop TSE MAC interface and put the device in an inactive state
+/* Stop 100G HIP MAC interface and put the device in an inactive state
  */
 static int s10_100ghip_shutdown(struct net_device *dev)
 {
@@ -840,9 +840,9 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 {
 	struct net_device *ndev;
 	int ret = -ENODEV;
-	struct resource *control_port;
+	struct resource *anlt, *phy, *txmac, *rxmac, *flow_control, *txstat, *rxstat;
 	struct resource *dma_res;
-	struct altera_tse_private *priv;
+	struct altera_s10_100ghip_private *priv;
 	const unsigned char *macaddr;
 	void __iomem *descmap;
 	const struct of_device_id *of_id = NULL;
@@ -860,7 +860,7 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 	priv->dev = ndev;
 	priv->msg_enable = netif_msg_init(debug, default_msg_level);
 
-	of_id = of_match_device(altera_tse_ids, &pdev->dev);
+	of_id = of_match_device(altera_s10_100ghip_ids, &pdev->dev);
 
 	if (of_id)
 		priv->dmaops = (struct altera_dmaops *)of_id->data;
@@ -901,33 +901,38 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 		goto err_free_netdev;
 
 	/* Reconfiguration address space */
-	ret = request_and_map(pdev, "anlt_csr", &control_port,
-			      (void __iomem **)&priv->mac_dev);
+	ret = request_and_map(pdev, "anlt_csr", &anlt,
+			      (void __iomem **)&priv->anlt_dev);
 	if (ret)
 		goto err_free_netdev;
 
-	ret = request_and_map(pdev, "control_port", &control_port,
-			      (void __iomem **)&priv->mac_dev);
+	ret = request_and_map(pdev, "phy_csr", &phy,
+			      (void __iomem **)&priv-phy_dev);
 	if (ret)
 		goto err_free_netdev;
 
-	ret = request_and_map(pdev, "control_port", &control_port,
-			      (void __iomem **)&priv->mac_dev);
+	ret = request_and_map(pdev, "txmac_csr", &txmac,
+			      (void __iomem **)&priv->txmac_dev);
 	if (ret)
 		goto err_free_netdev;
 
-	ret = request_and_map(pdev, "control_port", &control_port,
-			      (void __iomem **)&priv->mac_dev);
+	ret = request_and_map(pdev, "rxmac_csr", &rxmac,
+			      (void __iomem **)&priv->rxmac_dev);
 	if (ret)
 		goto err_free_netdev;
 
-	ret = request_and_map(pdev, "control_port", &control_port,
-			      (void __iomem **)&priv->mac_dev);
+	ret = request_and_map(pdev, "flow_control", &flow_control,
+			      (void __iomem **)&priv->fc_dev);
 	if (ret)
 		goto err_free_netdev;
 
-	ret = request_and_map(pdev, "control_port", &control_port,
-			      (void __iomem **)&priv->mac_dev);
+	ret = request_and_map(pdev, "txstat", &txstat,
+			      (void __iomem **)&priv->txstat_dev);
+	if (ret)
+		goto err_free_netdev;
+
+	ret = request_and_map(pdev, "rxstat", &rxstat,
+			      (void __iomem **)&priv->rxstat_dev);
 	if (ret)
 		goto err_free_netdev;
 
@@ -1000,12 +1005,12 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 		eth_hw_addr_random(ndev);
 
 	/* initialize netdev */
-	ndev->mem_start = control_port->start;
-	ndev->mem_end = control_port->end;
-	ndev->netdev_ops = &altera_tse_netdev_ops;
-	altera_tse_set_ethtool_ops(ndev);
+	ndev->mem_start = txmac->start;
+	ndev->mem_end = txmac->end;
+	ndev->netdev_ops = &altera_s10_100ghip_netdev_ops;
+	altera_s10_100ghip_set_ethtool_ops(ndev);
 
-	altera_tse_netdev_ops.ndo_set_rx_mode = tse_set_rx_mode;
+	altera_s10_100ghip_netdev_ops.ndo_set_rx_mode = s10_100ghip_set_rx_mode;
 
 	/* Scatter/gather IO is not supported,
 	 * so it is turned off
@@ -1020,7 +1025,7 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 	ndev->features |= NETIF_F_HW_VLAN_CTAG_RX;
 
 	/* setup NAPI interface */
-	netif_napi_add(ndev, &priv->napi, tse_poll, NAPI_POLL_WEIGHT);
+	netif_napi_add(ndev, &priv->napi, s10_100ghip_poll, NAPI_POLL_WEIGHT);
 
 	spin_lock_init(&priv->mac_cfg_lock);
 	spin_lock_init(&priv->tx_lock);
