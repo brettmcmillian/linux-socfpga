@@ -23,6 +23,7 @@
 #ifndef __ALTERA_S10_MSGDMA_H__
 #define __ALTERA_S10_MSGDMA_H__
 
+void s10_msgdma_check(struct altera_s10_100ghip_private *);
 void s10_msgdma_reset(struct altera_s10_100ghip_private *);
 void s10_msgdma_enable_txirq(struct altera_s10_100ghip_private *);
 void s10_msgdma_enable_rxirq(struct altera_s10_100ghip_private *);

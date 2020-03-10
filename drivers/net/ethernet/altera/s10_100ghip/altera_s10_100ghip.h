@@ -177,7 +177,7 @@ struct altera_s10_100ghip_txmac {
     u32 tx_mac_src_address_high;
 };
 
-struct altera_s10_100ghip_rxmac {
+struct altera_s10_100ghip_rxmac {u32 __iomem *sysid;
     u32 revision_id;
     u32 scratch;
     u32 reserved1;
@@ -217,6 +217,10 @@ struct altera_s10_100ghip_rxstat {
 #define ALTERA_S10_100GHIP_TX_CMD_STAT_OMIT_CRC		BIT(17)
 #define ALTERA_S10_100GHIP_TX_CMD_STAT_TX_SHIFT16	BIT(18)
 #define ALTERA_S10_100GHIP_RX_CMD_STAT_RX_SHIFT16	BIT(25)
+
+#define S10_100GHIP_TX_PLL_NOT_LOCKED -1
+#define S10_100GHIP_RX_CDR_PLL_NOT_LOCKED -2
+#define S10_100GHIP_TX_DATAPATH_NOT_READY -3
 
 /* Wrapper around a pointer to a socket buffer,
  * so a DMA handle can be stored along with the buffer
@@ -277,6 +281,9 @@ struct altera_s10_100ghip_private {
 	/* Statistics Counter address spaces */
 	struct altera_s10_100ghip_txstat __iomem *txstat_dev;
 	struct altera_s10_100ghip_rxstat __iomem *rxstat_dev;
+
+	/* System ID */
+	u32 __iomem *sysid;
 
 	/* TSE Revision */
 	u32	revision;

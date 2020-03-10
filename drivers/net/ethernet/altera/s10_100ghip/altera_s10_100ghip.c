@@ -832,6 +832,47 @@ static int request_and_map(struct platform_device *pdev, const char *name,
 	return 0;
 }
 
+static int altera_s10_100ghip_check(struct altera_s10_100ghip_private *priv)
+{
+	int i;
+	u32 reg;
+
+	reg = readl(priv->sysid);
+	printk("altera_s10_100ghip: sysid = 0x%08x.\n", reg);
+
+	printk("altera_s10_100ghip: Checking status of 100G HIP.\n");
+
+	printk("altera_s10_100ghip: PHY Revision ID = ");
+	reg = readl(priv->phy_dev);
+	printk("0x%08x\n", reg);
+
+/*	reg = readl(&priv->phy_dev->tx_pll_locked);
+	for (i=0; i<4; i++) {
+		printk("altera_s10_100ghip: Lane %d TX PLL = ", i);
+		if ((reg >> i) & 0x1)
+			printk("Locked\n");
+		else {
+			printk("Not Locked\n");
+			return S10_100GHIP_TX_PLL_NOT_LOCKED;
+		}
+	}
+        
+	reg = readl(&priv->phy_dev->rx_cdr_pll_locked);
+	for (i=0; i<4; i++) {
+		printk("altera_s10_100ghip: Lane %d RX CDR PLL = ", i);
+		if ((reg >> i) & 0x1)
+			 printk("Locked\n");
+		else {
+			printk("Not Locked\n");
+			return S10_100GHIP_RX_CDR_PLL_NOT_LOCKED;
+		}
+	}
+*/
+	
+	return 0;
+}
+
+
 /* Platform Driver functions */
 
 /* Probe Intel 100G HIP MAC device
@@ -841,6 +882,7 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 	struct net_device *ndev;
 	int ret = -ENODEV;
 	struct resource *anlt, *phy, *txmac, *rxmac, *flow_control, *txstat, *rxstat;
+	struct resource *sysid;
 	struct resource *dma_res;
 	struct altera_s10_100ghip_private *priv;
 	const unsigned char *macaddr;
@@ -935,6 +977,12 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 	if (ret)
 		goto err_free_netdev;
 
+	ret = request_and_map(pdev, "sysid", &sysid,
+				(void __iomem **)&priv->sysid);
+	if (ret)
+		goto err_free_netdev;
+
+
 	/* xSGDMA Rx Dispatcher address space */
 	ret = request_and_map(pdev, "rx_csr", &dma_res,
 			      &priv->rx_dma_csr);
@@ -1002,6 +1050,16 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 		ether_addr_copy(ndev->dev_addr, macaddr);
 	else
 		eth_hw_addr_random(ndev);
+
+	/* Check the mSGDMA Component Configuration Registers */
+        /* s10_msgdma_check(priv); */
+
+	/* Check to make sure the core is ready */
+        ret = altera_s10_100ghip_check(priv);
+	if (ret) {
+		dev_err(&pdev->dev, "The 100G HIP core is not ready. Exiting.\n");
+		goto err_free_netdev;
+	}
 
 	/* initialize netdev */
 	ndev->mem_start = txmac->start;
