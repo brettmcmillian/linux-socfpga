@@ -107,9 +107,10 @@ static void s10_100ghip_pcs_write(struct altera_s10_100ghip_private *priv, int r
 }
 
 /* Check PCS scratch memory */
-static int s10_100ghip_pcs_scratch_test(struct altera_s10_100ghip_private *priv, u16 value)
+static int s10_100ghip_pcs_scratch_test(struct altera_s10_100ghip_private *priv, u32 value)
 {
-	return 0;
+	writel(&priv->eth_reconfig->phy_scratch, value);
+	return (readl(&priv->eth_reconfig->phy_scratch) == value);
 }
 
 static int s10_100ghip_init_rx_buffer(struct altera_s10_100ghip_private *priv,
@@ -156,7 +157,19 @@ static void s10_100ghip_free_rx_buffer(struct altera_s10_100ghip_private *priv,
 static void s10_100ghip_free_tx_buffer(struct altera_s10_100ghip_private *priv,
 			       struct s10_100ghip_buffer *buffer)
 {
-
+	if (buffer->dma_addr) {
+		if (buffer->mapped_as_page)
+			dma_unmap_page(priv->device, buffer->dma_addr,
+				       buffer->len, DMA_TO_DEVICE);
+		else
+			dma_unmap_single(priv->device, buffer->dma_addr,
+					 buffer->len, DMA_TO_DEVICE);
+		buffer->dma_addr = 0;
+	}
+	if (buffer->skb) {
+		dev_kfree_skb_any(buffer->skb);
+		buffer->skb = NULL;
+	}
 }
 
 static int alloc_init_skbufs(struct altera_s10_100ghip_private *priv)
@@ -546,17 +559,17 @@ static void s10_100ghip_update_mac_addr(struct altera_s10_100ghip_private *priv,
 	u32 lsb;
 	u32 dat;
 
-	dat = csrrd32(priv->txmac_dev, s10_100ghip_txcsroffs(tx_mac_config));
+	dat = csrrd32(priv->eth_reconfig, s10_100ghip_ethreconfigoffs(txmac_config));
 	dat |= TX_MAC_EN_SADDR_INSERT;
 
 	msb = (addr[3] << 24) | (addr[2] << 16) | (addr[1] << 8) | addr[0];
 	lsb = ((addr[5] << 8) | addr[4]) & 0xffff;
 
 	/* Set primary MAC address */
-	csrwr32(msb, priv->txmac_dev, s10_100ghip_txcsroffs(tx_mac_src_address_low));
-	csrwr32(lsb, priv->txmac_dev, s10_100ghip_txcsroffs(tx_mac_src_address_high));
+	csrwr32(msb, priv->eth_reconfig, s10_100ghip_ethreconfigoffs(txmac_src_address_low));
+	csrwr32(lsb, priv->eth_reconfig, s10_100ghip_ethreconfigoffs(txmac_src_address_high));
 
-	csrwr32(dat, priv->txmac_dev, s10_100ghip_txcsroffs(tx_mac_config));
+	csrwr32(dat, priv->eth_reconfig, s10_100ghip_ethreconfigoffs(txmac_config));
 }
 
 /* MAC software reset.
@@ -595,14 +608,14 @@ static int init_mac(struct altera_s10_100ghip_private *priv)
  */
 static void s10_100ghip_set_mac(struct altera_s10_100ghip_private *priv, bool enable)
 {
-	u32 value = csrrd32(priv->txmac_dev, s10_100ghip_txcsroffs(tx_mac_config));
+	u32 value = csrrd32(priv->eth_reconfig, s10_100ghip_ethreconfigoffs(txmac_config));
 
 	if (enable)
 		value &= ~TX_MAC_DISABLE_TX_MAC;
 	else
 		value |= TX_MAC_DISABLE_TX_MAC;
 
-	csrwr32(value, priv->txmac_dev, s10_100ghip_txcsroffs(tx_mac_config));
+	csrwr32(value, priv->eth_reconfig, s10_100ghip_ethreconfigoffs(txmac_config));
 }
 
 /* Change the MTU
@@ -632,6 +645,18 @@ static void s10_100ghip_set_rx_mode(struct net_device *dev)
 static int init_100ghip_pcs(struct net_device *dev)
 {
 	//For now, just let the PCS come up in the default state.
+	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+
+	if (s10_100ghip_pcs_scratch_test(priv, 0x00000000) &&
+		s10_100ghip_pcs_scratch_test(priv, 0xFFFFFFFF) &&
+		s10_100ghip_pcs_scratch_test(priv, 0xa5a5a5a5)) {
+		netdev_info(dev, "PHY Revision ID: 0x%08x\n",
+				readl(&priv->eth_reconfig->phy_revision_id));
+	} else {
+		netdev_err(dev, "PHY scratch memory test failed.\n");
+		return -ENOMEM;
+	}
+
 	return 0;
 }
 
@@ -843,7 +868,7 @@ static int altera_s10_100ghip_check(struct altera_s10_100ghip_private *priv)
 	printk("altera_s10_100ghip: Checking status of 100G HIP.\n");
 
 	printk("altera_s10_100ghip: PHY Revision ID = ");
-	reg = readl(priv->phy_dev);
+	reg = readl(&priv->eth_reconfig->phy_revision_id);
 	printk("0x%08x\n", reg);
 
 /*	reg = readl(&priv->phy_dev->tx_pll_locked);
@@ -881,7 +906,8 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 {
 	struct net_device *ndev;
 	int ret = -ENODEV;
-	struct resource *anlt, *phy, *txmac, *rxmac, *flow_control, *txstat, *rxstat;
+	struct resource *eth_reconfig;
+	struct resource *xcvr_reconfig0, *xcvr_reconfig1, *xcvr_reconfig2, *xcvr_reconfig3;
 	struct resource *sysid;
 	struct resource *dma_res;
 	struct altera_s10_100ghip_private *priv;
@@ -942,38 +968,28 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 		goto err_free_netdev;
 
 	/* Reconfiguration address space */
-	ret = request_and_map(pdev, "anlt_csr", &anlt,
-			      (void __iomem **)&priv->anlt_dev);
+	ret = request_and_map(pdev, "eth_reconfig", &eth_reconfig,
+			      (void __iomem **)&priv->eth_reconfig);
 	if (ret)
 		goto err_free_netdev;
 
-	ret = request_and_map(pdev, "phy_csr", &phy,
-			      (void __iomem **)&priv->phy_dev);
+	ret = request_and_map(pdev, "xcvr_reconfig0", &xcvr_reconfig0,
+			      (void __iomem **)&priv->xcvr_reconfig0);
 	if (ret)
 		goto err_free_netdev;
 
-	ret = request_and_map(pdev, "txmac_csr", &txmac,
-			      (void __iomem **)&priv->txmac_dev);
+	ret = request_and_map(pdev, "xcvr_reconfig1", &xcvr_reconfig1,
+			      (void __iomem **)&priv->xcvr_reconfig1);
 	if (ret)
 		goto err_free_netdev;
 
-	ret = request_and_map(pdev, "rxmac_csr", &rxmac,
-			      (void __iomem **)&priv->rxmac_dev);
+	ret = request_and_map(pdev, "xcvr_reconfig2", &xcvr_reconfig2,
+			      (void __iomem **)&priv->xcvr_reconfig2);
 	if (ret)
 		goto err_free_netdev;
 
-	ret = request_and_map(pdev, "flow_control", &flow_control,
-			      (void __iomem **)&priv->fc_dev);
-	if (ret)
-		goto err_free_netdev;
-
-	ret = request_and_map(pdev, "txstat", &txstat,
-			      (void __iomem **)&priv->txstat_dev);
-	if (ret)
-		goto err_free_netdev;
-
-	ret = request_and_map(pdev, "rxstat", &rxstat,
-			      (void __iomem **)&priv->rxstat_dev);
+	ret = request_and_map(pdev, "xcvr_reconfig3", &xcvr_reconfig3,
+			      (void __iomem **)&priv->xcvr_reconfig3);
 	if (ret)
 		goto err_free_netdev;
 
@@ -1052,7 +1068,7 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 		eth_hw_addr_random(ndev);
 
 	/* Check the mSGDMA Component Configuration Registers */
-        /* s10_msgdma_check(priv); */
+	s10_msgdma_check(priv);
 
 	/* Check to make sure the core is ready */
         ret = altera_s10_100ghip_check(priv);
@@ -1062,8 +1078,8 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 	}
 
 	/* initialize netdev */
-	ndev->mem_start = txmac->start;
-	ndev->mem_end = txmac->end;
+	ndev->mem_start = eth_reconfig->start;
+	ndev->mem_end = eth_reconfig->end;
 	ndev->netdev_ops = &altera_s10_100ghip_netdev_ops;
 	/* 
 	 * Need to add this back in to enable ethtool!!!!!!!!!!!
@@ -1092,6 +1108,7 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 	spin_lock_init(&priv->rxdma_irq_lock);
 
 	netif_carrier_off(ndev);
+	printk("altera_s10_100ghip: Registering the 100G HIP network device.\n");
 	ret = register_netdev(ndev);
 	if (ret) {
 		dev_err(&pdev->dev, "failed to register 100G HIP net device\n");
@@ -1100,13 +1117,13 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, ndev);
 
-	priv->revision = ioread32(&priv->txmac_dev->revision_id);
+	priv->revision = readl(&priv->eth_reconfig->phy_revision_id);
 
 	if (netif_msg_probe(priv))
 		dev_info(&pdev->dev, "Intel 100G MAC+PCS version %d.%d at 0x%08lx irq %d/%d\n",
 			 (priv->revision >> 8) & 0xff,
 			 priv->revision & 0xff,
-			 (unsigned long) txmac->start, priv->rx_irq,
+			 (unsigned long) eth_reconfig->start, priv->rx_irq,
 			 priv->tx_irq);
 
 err_register_netdev:

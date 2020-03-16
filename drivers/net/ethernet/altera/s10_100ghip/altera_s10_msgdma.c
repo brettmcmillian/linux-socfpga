@@ -50,13 +50,13 @@ void s10_msgdma_check(struct altera_s10_100ghip_private *priv)
 	printk("altera_s10_100ghip: RX Component Config 1: 0x%08x\n", reg);
 
 	reg = csrrd32(priv->rx_dma_csr, msgdma_csroffs(comp_cfg2));
-	printk("altera_s10_100ghip: RX Component Config 2: 0x%08x/n", reg);
+	printk("altera_s10_100ghip: RX Component Config 2: 0x%08x\n", reg);
 
 	reg = csrrd32(priv->tx_dma_csr, msgdma_csroffs(comp_cfg1));
 	printk("altera_s10_100ghip: TX Component Config 1: 0x%08x\n", reg);
 
 	reg = csrrd32(priv->tx_dma_csr, msgdma_csroffs(comp_cfg2));
-	printk("altera_s10_100ghip: TX Component Config 2: 0x%08x/n", reg);
+	printk("altera_s10_100ghip: TX Component Config 2: 0x%08x\n", reg);
 
 	return 0;
 }

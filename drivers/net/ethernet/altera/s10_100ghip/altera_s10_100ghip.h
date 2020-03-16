@@ -134,83 +134,76 @@
 #define TX_MAC_DISABLE_TX_MAC	BIT(2)
 #define TX_MAC_DISABLE_TXVLAN	BIT(1)
 
-struct altera_s10_100ghip_phy {
-    u32 revision_id;
-    u32 scratch;
-    u32 config;
-    u32 pma_serial_loopback;
-    u32 tx_pll_locked;
-    u32 rx_cdr_pll_locked;
-    u32 tx_datapath_ready;
-    u32 frame_errors_detected;
-    u32 clear_frame_errors;
-    u32 reset;
-    u32 rx_pcs_status_for_anlt;
-    u32 pcs_error_injection;
-    u32 alignment_marker_lock;
-    u32 ber_count;
-    u32 pcs_virtual_lane0;
-    u32 pcs_virtual_lane1;
-    u32 pcs_virtual_lane2;
-    u32 pcs_virtual_lane3;
-    u32 recovered_clock_freq;
-    u32 tx_clock_freq;
-    u32 prog_alignment_marker0;
-    u32 prog_alignment_marker1;
-    u32 prog_alignment_marker2;
-    u32 prog_alignment_marker3;
+struct altera_s10_100ghip_ethreconfig {
+
+	u32 anlt_padding[768];
+
+	u32 phy_revision_id;
+	u32 phy_scratch;
+	u32 phy_config;
+	u32 phy_pma_serial_loopback;
+	u32 phy_tx_pll_locked;
+	u32 phy_rx_cdr_pll_locked;
+	u32 phy_tx_datapath_ready;
+	u32 phy_frame_errors_detected;
+	u32 phy_clear_frame_errors;
+	u32 phy_reset;
+	u32 phy_rx_pcs_status_for_anlt;
+	u32 phy_pcs_error_injection;
+	u32 phy_alignment_marker_lock;
+	u32 phy_ber_count;
+	u32 phy_pcs_virtual_lane0;
+	u32 phy_pcs_virtual_lane1;
+	u32 phy_pcs_virtual_lane2;
+	u32 phy_pcs_virtual_lane3;
+	u32 phy_recovered_clock_freq;
+	u32 phy_tx_clock_freq;
+	u32 phy_prog_alignment_marker0;
+	u32 phy_prog_alignment_marker1;
+	u32 phy_prog_alignment_marker2;
+	u32 phy_prog_alignment_marker3;
+
+	u32 phy_padding[135];
+
+	u32 txmac_revision_id;
+	u32 txmac_scratch;
+	u32 txmac_reserved1;
+	u32 txmac_reserved2;
+	u32 txmac_reserved3;
+	u32 txmac_link_fault_config;
+	u32 txmac_ipg_words;
+	u32 txmac_max_tx_rame_size;
+	u32 txmac_unused[2];
+	u32 txmac_config;
+	u32 txmac_ehip_feature_config;
+	u32 txmac_src_address_low;
+	u32 txmac_src_address_high;
+
+	u32 txmac_padding[243];
+
+	u32 rxmac_revision_id;
+	u32 rxmac_scratch;
+	u32 rxmac_reserved1;
+	u32 rxmac_reserved2;
+	u32 rxmac_reserved3;
+	u32 rxmac_unused1;
+	u32 rxmac_max_rx_frame_size;
+	u32 rxmac_rx_crc_forwarding;
+	u32 rxmac_link_fault_status;
+	u32 rxmac_unused2;
+	u32 rxmac_config;
+	u32 rxmac_ehip_feature_config;
+
+	u32 rxmac_padding[245];
 };
 
-struct altera_s10_100ghip_txmac {
-    u32 revision_id;
-    u32 scratch;
-    u32 reserved1;
-    u32 reserved2;
-    u32 reserved3;
-    u32 link_fault_config;
-    u32 ipg_words;
-    u32 max_tx_rame_size;
-	u32 unused[2];
-    u32 tx_mac_config;
-    u32 ehip_tx_mac_feature_config;
-    u32 tx_mac_src_address_low;
-    u32 tx_mac_src_address_high;
-};
-
-struct altera_s10_100ghip_rxmac {u32 __iomem *sysid;
-    u32 revision_id;
-    u32 scratch;
-    u32 reserved1;
-    u32 reserved2;
-    u32 reserved3;
-	u32 unused1;
-    u32 max_rx_frame_size;
-    u32 rx_crc_forwarding;
-    u32 link_fault_status;
-	u32 unused2;
-    u32 rx_mac_config;
-    u32 ehip_rx_mac_feature_config;
-};
-
-struct altera_s10_100ghip_flow_control {
-
-};
-
-struct altera_s10_100ghip_txstat {
-
-};
-
-struct altera_s10_100ghip_rxstat {
+struct altera_s10_100ghip_xcvrreconfig {
 
 };
 
-#define s10_100ghip_anltcsroffs(a) (offsetof(struct altera_s10_100ghip_anlt, a))
-#define s10_100ghip_phycsroffs(a) (offsetof(struct altera_s10_100ghip_phy, a))
-#define s10_100ghip_txcsroffs(a) (offsetof(struct altera_s10_100ghip_txmac, a))
-#define s10_100ghip_rxcsroffs(a) (offsetof(struct altera_s10_100ghip_rxmac, a))
-#define s10_100ghip_fccsroffs(a) (offsetof(struct altera_s10_100ghip_flow_control, a))
-#define s10_100ghip_txstatcsroffs(a) (offsetof(struct altera_s10_100ghip_txstat, a))
-#define s10_100ghip_rxstatcsroffs(a) (offsetof(struct altera_s10_100ghip_rxstat, a))
+
+#define s10_100ghip_ethreconfigoffs(a) (offsetof(struct altera_s10_100ghip_ethreconfig, a))
+#define s10_100ghip_xcvrreconfigoffs(a) (offsetof(struct altera_s10_100ghip_xcvrreconfig, a))
 
 /* Transmit and Receive Command Registers Bit Definitions
  */
@@ -265,22 +258,14 @@ struct altera_s10_100ghip_private {
 	struct device *device;
 	struct napi_struct napi;
 
-	/* Auto-negotiation & Link Training address space */
-	struct altera_s10_100ghip_anlt __iomem *anlt_dev;
+	/* Ethernet Reconfiguration Address Space */
+	struct altera_s10_100ghip_ethreconfig __iomem *eth_reconfig;
 
-	/* PHY address space */
-	struct altera_s10_100ghip_phy __iomem *phy_dev;
-
-	/* MAC address spaces */
-	struct altera_s10_100ghip_txmac __iomem *txmac_dev;
-	struct altera_s10_100ghip_rxmac __iomem *rxmac_dev;
-
-	/* Pause and Priority-based Flow Control address space */
-	struct altera_s10_100ghip_flow_control __iomem *fc_dev;
-
-	/* Statistics Counter address spaces */
-	struct altera_s10_100ghip_txstat __iomem *txstat_dev;
-	struct altera_s10_100ghip_rxstat __iomem *rxstat_dev;
+	/* XCVR Reconfiguration Address Spaces */
+	struct altera_s10_100ghip_xcvrreconfig __iomem *xcvr_reconfig0;
+	struct altera_s10_100ghip_xcvrreconfig __iomem *xcvr_reconfig1;
+	struct altera_s10_100ghip_xcvrreconfig __iomem *xcvr_reconfig2;
+	struct altera_s10_100ghip_xcvrreconfig __iomem *xcvr_reconfig3;
 
 	/* System ID */
 	u32 __iomem *sysid;
