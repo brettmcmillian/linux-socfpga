@@ -136,8 +136,10 @@
 
 struct altera_s10_100ghip_ethreconfig {
 
+	/* Auto-negotiation and link training registers are currently disabled */
 	u32 anlt_padding[768];
 
+	/* PHY registers begin at offset 0x300 double words */
 	u32 phy_revision_id;
 	u32 phy_scratch;
 	u32 phy_config;
@@ -165,6 +167,7 @@ struct altera_s10_100ghip_ethreconfig {
 
 	u32 phy_padding[135];
 
+	/* TX MAC registers begin at offset 0x400 double words */
 	u32 txmac_revision_id;
 	u32 txmac_scratch;
 	u32 txmac_reserved1;
@@ -181,6 +184,7 @@ struct altera_s10_100ghip_ethreconfig {
 
 	u32 txmac_padding[243];
 
+	/* RX MAC registers begin at offset 0x500 double words */
 	u32 rxmac_revision_id;
 	u32 rxmac_scratch;
 	u32 rxmac_reserved1;
@@ -195,6 +199,58 @@ struct altera_s10_100ghip_ethreconfig {
 	u32 rxmac_ehip_feature_config;
 
 	u32 rxmac_padding[245];
+
+	/* Pause & Priority-Based Flow Control registers begin at offset 0x600 double words */
+	u32 fc_txsfc_module_revision_id;
+	u32 fc_txsfc_scratch;
+	u32 fc_reserved1[3];
+	u32 fc_enable_tx_pause_ports;
+	u32 fc_tx_pause_request;
+	u32 fc_enable_auto_tx_pause_retran;
+	u32 fc_retransmit_holdoff_quanta;
+	u32 fc_retransmit_pause_quanta;
+	u32 fc_enable_tx_xoff;
+	u32 fc_enable_uniform_holdoff;
+	u32 fc_set_uniform_holdoff;
+	u32 fc_dest_addr_low;
+	u32 fc_dest_addr_high;
+	u32 fc_src_addr_low;
+	u32 fc_src_addr_high;
+	u32 fc_tx_fc_feature_config;
+	u32 fc_unused1[14];
+	u32 fc_pause_quanta0;
+	u32 fc_pause_quanta1;
+	u32 fc_pause_quanta2;
+	u32 fc_pause_quanta3;
+	u32 fc_pause_quanta4;
+	u32 fc_pause_quanta5;
+	u32 fc_pause_quanta6;
+	u32 fc_pause_quanta7;
+	u32 fc_holdoff_quanta0;
+	u32 fc_holdoff_quanta1;
+	u32 fc_holdoff_quanta2;
+	u32 fc_holdoff_quanta3;
+	u32 fc_holdoff_quanta4;
+	u32 fc_holdoff_quanta5;
+	u32 fc_holdoff_quanta6;
+	u32 fc_holdoff_quanta7;
+
+	u32 fc_unused2[209];
+
+	u32 fc_rxsfc_module_revision_id;
+	u32 fc_rxsfc_scratch;
+	u32 fc_reserved2[3];
+	u32 fc_enable_rx_pause_frame_proc;
+	u32 fc_forward_frames;
+	u32 fc_rx_pause_dest_addr_low;
+	u32 fc_rx_pause_dest_addr_high;
+
+	u32 fc_padding[248];
+
+	/* TX Statistics Counter registers begin at offset 0x800 double words */
+
+	/* RX Statistics Counter registers begin at offset 0x900 double words */
+
 };
 
 struct altera_s10_100ghip_xcvrreconfig {
