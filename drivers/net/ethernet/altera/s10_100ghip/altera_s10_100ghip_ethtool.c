@@ -622,6 +622,9 @@ static void s10_100ghip_get_regs(struct net_device *dev, struct ethtool_regs *re
 static int s10_100ghip_get_link_ksettings(struct net_device *dev,
 										  struct ethtool_link_ksettings *link_ksettings)
 {
+	ethtool_link_ksettings_zero_link_mode(link_ksettings, supported);
+	ethtool_link_ksettings_add_link_mode((link_ksettings, supported, 100000baseSR4_Full);
+
 	link_ksettings->base.speed = SPEED_100000;
 	link_ksettings->base.duplex = DUPLEX_FULL;
 	link_ksettings->base.autoneg = AUTONEG_DISABLE;
@@ -630,11 +633,11 @@ static int s10_100ghip_get_link_ksettings(struct net_device *dev,
 }
 
 static int s10_100ghip_set_link_ksettings(struct net_device *dev,
-										  struct ethtool_link_ksettings *link_ksettings)
+										  const struct ethtool_link_ksettings *link_ksettings)
 {
-	link_ksettings->base.speed = SPEED_100000;
+/*	link_ksettings->base.speed = SPEED_100000;
 	link_ksettings->base.duplex = DUPLEX_FULL;
-	link_ksettings->base.autoneg = AUTONEG_DISABLE;
+	link_ksettings->base.autoneg = AUTONEG_DISABLE;*/
 
 	return 0;
 }
