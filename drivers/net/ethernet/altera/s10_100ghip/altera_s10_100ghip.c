@@ -1057,10 +1057,8 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 	ndev->mem_start = eth_reconfig->start;
 	ndev->mem_end = eth_reconfig->end;
 	ndev->netdev_ops = &altera_s10_100ghip_netdev_ops;
-	/* 
-	 * Need to add this back in to enable ethtool!!!!!!!!!!!
-	 */
-	/* altera_s10_100ghip_set_ethtool_ops(ndev); */
+	
+	altera_s10_100ghip_set_ethtool_ops(ndev);
 
 	altera_s10_100ghip_netdev_ops.ndo_set_rx_mode = s10_100ghip_set_rx_mode;
 
