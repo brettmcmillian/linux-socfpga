@@ -645,7 +645,7 @@ static void s10_100ghip_set_rx_mode(struct net_device *dev)
 static int init_100ghip_pcs(struct net_device *dev)
 {
 	//For now, just let the PCS come up in the default state.
-	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+/*	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
 
 	if (s10_100ghip_pcs_scratch_test(priv, 0x00000000) &&
 		s10_100ghip_pcs_scratch_test(priv, 0xFFFFFFFF) &&
@@ -656,7 +656,7 @@ static int init_100ghip_pcs(struct net_device *dev)
 		netdev_err(dev, "PHY scratch memory test failed.\n");
 		return -ENOMEM;
 	}
-
+*/
 	return 0;
 }
 
@@ -867,33 +867,9 @@ static int altera_s10_100ghip_check(struct altera_s10_100ghip_private *priv)
 
 	printk("altera_s10_100ghip: Checking status of 100G HIP.\n");
 
-	printk("altera_s10_100ghip: PHY Revision ID = ");
 	reg = readl(&priv->eth_reconfig->phy_revision_id);
-	printk("0x%08x\n", reg);
+	printk("altera_s10_100ghip: PHY Revision ID = 0x%08x\n", reg);
 
-/*	reg = readl(&priv->phy_dev->tx_pll_locked);
-	for (i=0; i<4; i++) {
-		printk("altera_s10_100ghip: Lane %d TX PLL = ", i);
-		if ((reg >> i) & 0x1)
-			printk("Locked\n");
-		else {
-			printk("Not Locked\n");
-			return S10_100GHIP_TX_PLL_NOT_LOCKED;
-		}
-	}
-        
-	reg = readl(&priv->phy_dev->rx_cdr_pll_locked);
-	for (i=0; i<4; i++) {
-		printk("altera_s10_100ghip: Lane %d RX CDR PLL = ", i);
-		if ((reg >> i) & 0x1)
-			 printk("Locked\n");
-		else {
-			printk("Not Locked\n");
-			return S10_100GHIP_RX_CDR_PLL_NOT_LOCKED;
-		}
-	}
-*/
-	
 	return 0;
 }
 
@@ -1125,6 +1101,8 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 			 priv->revision & 0xff,
 			 (unsigned long) eth_reconfig->start, priv->rx_irq,
 			 priv->tx_irq);
+
+	return 0;
 
 err_register_netdev:
 	netif_napi_del(&priv->napi);
