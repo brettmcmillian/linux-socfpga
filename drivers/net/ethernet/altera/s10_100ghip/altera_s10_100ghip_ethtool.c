@@ -133,10 +133,13 @@ static void s10_100ghip_fill_stats(struct net_device *dev, struct ethtool_stats 
 	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
 	u64 ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
+/*	ext = (u64) csrrd32(priv->eth_reconfig,
 			 s10_100ghip_ethreconfigoffs(txstat_frames_lessthan_64B_w_crcerr_high)) << 32;
 	ext |= csrrd32(priv->eth_reconfig,
 			 s10_100ghip_ethreconfigoffs(txstat_frames_lessthan_64B_w_crcerr_low));
+*/
+	ext = (u64) readl(&priv->eth_reconfig->txstat_frames_lessthan_64B_w_crcerr_high) << 32;
+	ext |= readl(&priv->eth_reconfig->txstat_frames_lessthan_64B_w_crcerr_low);
 	buf[0] = ext;
 
 	ext = (u64) csrrd32(priv->eth_reconfig,
@@ -624,7 +627,7 @@ static int s10_100ghip_get_link_ksettings(struct net_device *dev,
 {
 	ethtool_link_ksettings_zero_link_mode(link_ksettings, supported);
 	ethtool_link_ksettings_add_link_mode(link_ksettings, supported, 100000baseSR4_Full);
-	ethtool_link_ksettings_add_link_mode(link_ksettings, advertised, 100000baseSR4_Full);
+	ethtool_link_ksettings_add_link_mode(link_ksettings, advertising, 100000baseSR4_Full);
 
 	link_ksettings->base.speed = SPEED_100000;
 	link_ksettings->base.duplex = DUPLEX_FULL;

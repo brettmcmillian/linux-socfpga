@@ -142,8 +142,11 @@ struct altera_s10_100ghip_ethreconfig {
 	/* PHY registers begin at offset 0x300 double words */
 	u32 phy_revision_id;
 	u32 phy_scratch;
+	u32 phy_unused1[14];
 	u32 phy_config;
+	u32 phy_unused2[2];
 	u32 phy_pma_serial_loopback;
+	u32 phy_unused3[12];
 	u32 phy_tx_pll_locked;
 	u32 phy_rx_cdr_pll_locked;
 	u32 phy_tx_datapath_ready;
@@ -153,43 +156,43 @@ struct altera_s10_100ghip_ethreconfig {
 	u32 phy_rx_pcs_status_for_anlt;
 	u32 phy_pcs_error_injection;
 	u32 phy_alignment_marker_lock;
+	u32 phy_unused4;
 	u32 phy_ber_count;
+	u32 phy_unused5[5];
 	u32 phy_pcs_virtual_lane0;
 	u32 phy_pcs_virtual_lane1;
 	u32 phy_pcs_virtual_lane2;
 	u32 phy_pcs_virtual_lane3;
+	u32 phy_unused6[12];
 	u32 phy_recovered_clock_freq;
 	u32 phy_tx_clock_freq;
+	u32 phy_unused7[52];
 	u32 phy_prog_alignment_marker0;
 	u32 phy_prog_alignment_marker1;
 	u32 phy_prog_alignment_marker2;
 	u32 phy_prog_alignment_marker3;
 
-	u32 phy_padding[135];
+	u32 phy_padding[134];
 
 	/* TX MAC registers begin at offset 0x400 double words */
 	u32 txmac_revision_id;
 	u32 txmac_scratch;
-	u32 txmac_reserved1;
-	u32 txmac_reserved2;
-	u32 txmac_reserved3;
+	u32 txmac_reserved[3];
 	u32 txmac_link_fault_config;
 	u32 txmac_ipg_words;
-	u32 txmac_max_tx_rame_size;
+	u32 txmac_max_tx_frame_size;
 	u32 txmac_unused[2];
 	u32 txmac_config;
 	u32 txmac_ehip_feature_config;
 	u32 txmac_src_address_low;
 	u32 txmac_src_address_high;
 
-	u32 txmac_padding[243];
+	u32 txmac_padding[242];
 
 	/* RX MAC registers begin at offset 0x500 double words */
 	u32 rxmac_revision_id;
 	u32 rxmac_scratch;
-	u32 rxmac_reserved1;
-	u32 rxmac_reserved2;
-	u32 rxmac_reserved3;
+	u32 rxmac_reserved[3]];
 	u32 rxmac_unused1;
 	u32 rxmac_max_rx_frame_size;
 	u32 rxmac_rx_crc_forwarding;
@@ -198,7 +201,7 @@ struct altera_s10_100ghip_ethreconfig {
 	u32 rxmac_config;
 	u32 rxmac_ehip_feature_config;
 
-	u32 rxmac_padding[245];
+	u32 rxmac_padding[244];
 
 	/* Pause & Priority-Based Flow Control registers begin at offset 0x600 double words */
 	u32 fc_txsfc_module_revision_id;
@@ -217,7 +220,7 @@ struct altera_s10_100ghip_ethreconfig {
 	u32 fc_src_addr_low;
 	u32 fc_src_addr_high;
 	u32 fc_tx_fc_feature_config;
-	u32 fc_unused1[14];
+	u32 fc_unused1[13];
 	u32 fc_pause_quanta0;
 	u32 fc_pause_quanta1;
 	u32 fc_pause_quanta2;
@@ -245,7 +248,7 @@ struct altera_s10_100ghip_ethreconfig {
 	u32 fc_rx_pause_dest_addr_low;
 	u32 fc_rx_pause_dest_addr_high;
 
-	u32 fc_padding[248];
+	u32 fc_padding[247];
 
 	/* TX Statistics Counter registers begin at offset 0x800 double words */
 	u32 txstat_frames_lessthan_64B_w_crcerr_low;
@@ -265,9 +268,9 @@ struct altera_s10_100ghip_ethreconfig {
 	u32 txstat_multicast_control_frames_w_crcerr_low;
 	u32 txstat_multicast_control_frames_w_crcerr_high;
 	u32 txstat_broadcast_control_frames_w_crcerr_low;
-        u32 txstat_broadcast_control_frames_w_crcerr_high;
-        u32 txstat_unicast_control_frames_w_crcerr_low;
-        u32 txstat_unicast_control_frames_w_crcerr_high;
+    u32 txstat_broadcast_control_frames_w_crcerr_high;
+    u32 txstat_unicast_control_frames_w_crcerr_low;
+    u32 txstat_unicast_control_frames_w_crcerr_high;
 	u32 txstat_pause_frame_w_crcerr_low;
 	u32 txstat_pause_frame_w_crcerr_high;
 	u32 txstat_64B_frames_low;
@@ -300,7 +303,7 @@ struct altera_s10_100ghip_ethreconfig {
 	u32 txstat_unicast_control_frames_wo_err_high;
 	u32 txstat_pause_frame_wo_err_low;
 	u32 txstat_pause_frame_wo_err_high;
-        u32 txstat_frames_lessthan_64B_and_crcerr_low;
+    u32 txstat_frames_lessthan_64B_and_crcerr_low;
 	u32 txstat_frames_lessthan_64B_and_crcerr_high;
 	u32 txstat_num_frame_starts_low;
 	u32 txstat_num_frame_starts_high;
