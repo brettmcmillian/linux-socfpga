@@ -58,6 +58,8 @@
 
 #define ALTERA_S10_100GHIP_PAUSE_QUANTA		0xffff
 
+#define SUPPORTED_100000baseSR4_Full		1 << 37;
+
 #define GET_BIT_VALUE(v, bit)		(((v) >> (bit)) & 0x1)
 
 /* MAC Command_Config Register Bit Definitions
@@ -552,7 +554,7 @@ struct altera_s10_100ghip_private {
 	/* PHY */
 	int phy_addr;		/* PHY's MDIO address, -1 for autodetection */
 	phy_interface_t phy_iface;
-	struct mii_bus *mdio;
+	const char * phy_name;
 	int oldspeed;
 	int oldduplex;
 	int oldlink;

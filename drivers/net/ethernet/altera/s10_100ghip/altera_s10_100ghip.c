@@ -530,7 +530,7 @@ out:
  * function converts those variables into the appropriate
  * register values, and can bring down the device if needed.
  */
-/*
+
 static void altera_s10_100ghip_adjust_link(struct net_device *dev)
 {
 	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
@@ -540,7 +540,7 @@ static void altera_s10_100ghip_adjust_link(struct net_device *dev)
 		phy_print_status(phydev);
 }
 
-
+/*
 static struct phy_device *connect_local_phy(struct net_device *dev)
 {
 
@@ -557,17 +557,17 @@ static int altera_s10_100ghip_phy_get_addr_mdio_create(struct net_device *dev)
  
 static int init_phy(struct net_device *dev)
 {
-	/*
 	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
 	struct phy_device *phydev == NULL;
 	int ret;
 
-	priv->phy_iface = PHY_INTERFACE_MODE_NA;
+	priv->phy_iface = PHY_INTERFACE_MODE_INTERNAL;
+	priv->phy_name = "internal_phy";
 	priv->oldlink = 0;
 	priv->oldspeed = 0;
 	priv->oldduplex = -1;
 
-	phydev = phy_connect(dev, NULL, &altera_s10_100ghip_adjust_link, priv->phy_iface);
+	phydev = phy_connect(dev, priv->phy_name, &altera_s10_100ghip_adjust_link, priv->phy_iface);
 
 	ret = phy_connect_direct(dev, phydev, &altera_s10_100ghip_adjust_link, priv->phy_iface);
 
@@ -580,7 +580,7 @@ static int init_phy(struct net_device *dev)
 	phydev->advertising &= SUPPORTED_100000baseSR4_Full;
 
 	netdev_dbg(dev, "attached to 100G HIP PHY.\n");
-*/
+
 	return 0;
 }
 
