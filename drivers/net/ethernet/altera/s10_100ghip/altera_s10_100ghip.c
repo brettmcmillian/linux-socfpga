@@ -561,13 +561,18 @@ static int init_phy(struct net_device *dev)
 	struct phy_device *phydev = NULL;
 	int ret;
 
-	priv->phy_iface = PHY_INTERFACE_MODE_INTERNAL;
-	priv->phy_name = "internal_phy";
+	priv->phy_iface = PHY_INTERFACE_MODE_NA;
+	priv->phy_name = "internal PHY";
 	priv->oldlink = 0;
 	priv->oldspeed = 0;
 	priv->oldduplex = -1;
 
 	phydev = phy_connect(dev, priv->phy_name, &altera_s10_100ghip_adjust_link, priv->phy_iface);
+
+	if (phydev == ERR_PTR(-ENODEV)) {
+		netdev_err(dev, "Could not connect to PHY\n");
+		return 0;
+	}
 
 	ret = phy_connect_direct(dev, phydev, &altera_s10_100ghip_adjust_link, priv->phy_iface);
 
