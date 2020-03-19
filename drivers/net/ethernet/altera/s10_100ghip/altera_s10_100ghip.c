@@ -897,30 +897,13 @@ static int altera_s10_100ghip_check(struct altera_s10_100ghip_private *priv)
 	printk("altera_s10_100ghip: sysid = 0x%08x.\n", reg);
 
 	printk("altera_s10_100ghip: Checking status of 100G HIP.\n");
-struct altera_s10_100ghip_private *priv = netdev_priv(dev);
-	struct phy_device *phydev == NULL;
-	int ret;
 
-	priv->phy_iface = PHY_INTERFACE_MODE_NA;
-	priv->oldlink = 0;
-	priv->oldspeed = 0;
-	priv->oldduplex = -1;
-
-	phydev = phy_connect(dev, NULL, &altera_s10_100ghip_adjust_link, priv->phy_iface);
-
-	ret = phy_connect_direct(dev, phydev, &altera_s10_100ghip_adjust_link, priv->phy_iface);
-
-	if (ret != 0) {
-		netdev_err(dev, "Could not attach to PHY\n");
-		phydev = NULL;
-		return 0;
-	}
+	reg = readl(&priv->eth_reconfig->phy_tx_datapath_ready);
+	if (PHY_TX_PCS_READY_GET(reg) == 0x1)
+		printk("altera_s10_100ghip: TX Datapath is ready\n");
+	else
+		printk("altera_s10_100ghip: TX Datapath is not ready\n");
 	
-	phydev->advertising &= SUPPORTED_100000baseSR4_Full;
-
-	netdev_dbg(dev, "attached to 100G HIP PHY.\n");
-	reg = readl(&priv->eth_reconfig->phy_revision_id);
-	printk("altera_s10_100ghip: PHY Revision ID = 0x%08x\n", reg);
 
 	return 0;
 }
