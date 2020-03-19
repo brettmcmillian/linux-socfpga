@@ -558,7 +558,7 @@ static int altera_s10_100ghip_phy_get_addr_mdio_create(struct net_device *dev)
 static int init_phy(struct net_device *dev)
 {
 	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
-	struct phy_device *phydev == NULL;
+	struct phy_device *phydev = NULL;
 	int ret;
 
 	priv->phy_iface = PHY_INTERFACE_MODE_INTERNAL;
