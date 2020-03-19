@@ -899,7 +899,8 @@ static int altera_s10_100ghip_check(struct altera_s10_100ghip_private *priv)
 	printk("altera_s10_100ghip: Checking status of 100G HIP.\n");
 
 	reg = readl(&priv->eth_reconfig->phy_tx_datapath_ready);
-	if (PHY_TX_PCS_READY_GET(reg) == 0x1)
+	reg &= PHY_TX_PCS_READY_GET;
+	if (reg == 0x1)
 		printk("altera_s10_100ghip: TX Datapath is ready\n");
 	else
 		printk("altera_s10_100ghip: TX Datapath is not ready\n");
