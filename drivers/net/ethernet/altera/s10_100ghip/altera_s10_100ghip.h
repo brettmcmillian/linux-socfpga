@@ -192,7 +192,7 @@ struct altera_s10_100ghip_ethreconfig {
 	/* RX MAC registers begin at offset 0x500 double words */
 	u32 rxmac_revision_id;
 	u32 rxmac_scratch;
-	u32 rxmac_reserved[3]];
+	u32 rxmac_reserved[3];
 	u32 rxmac_unused1;
 	u32 rxmac_max_rx_frame_size;
 	u32 rxmac_rx_crc_forwarding;

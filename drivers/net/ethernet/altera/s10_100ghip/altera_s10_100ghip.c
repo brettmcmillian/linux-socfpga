@@ -281,6 +281,8 @@ static int s10_100ghip_rx(struct altera_s10_100ghip_private *priv, int limit)
 	u16 pktlength;
 	u16 pktstatus;
 
+	printk("altera_s10_100ghip: Receive a packet.\n");
+
 	/* Check for count < limit first as get_rx_status is changing
 	* the response-fifo so we must process the next packet
 	* after calling get_rx_status if a response is pending.
@@ -531,8 +533,13 @@ out:
 /*
 static void altera_s10_100ghip_adjust_link(struct net_device *dev)
 {
+	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+	struct phy_device *phydev = dev->phydev;
 
+	if (netif_msg_link(priv))
+		phy_print_status(phydev);
 }
+
 
 static struct phy_device *connect_local_phy(struct net_device *dev)
 {
@@ -545,13 +552,38 @@ static int altera_s10_100ghip_phy_get_addr_mdio_create(struct net_device *dev)
 
 }
 */
-/* Initialize driver's PHY state, and attach to the PHY
+
+/* Initialize driver's PHY state, and attach to the PHY */
  
 static int init_phy(struct net_device *dev)
 {
+	/*
+	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+	struct phy_device *phydev == NULL;
+	int ret;
 
-}
+	priv->phy_iface = PHY_INTERFACE_MODE_NA;
+	priv->oldlink = 0;
+	priv->oldspeed = 0;
+	priv->oldduplex = -1;
+
+	phydev = phy_connect(dev, NULL, &altera_s10_100ghip_adjust_link, priv->phy_iface);
+
+	ret = phy_connect_direct(dev, phydev, &altera_s10_100ghip_adjust_link, priv->phy_iface);
+
+	if (ret != 0) {
+		netdev_err(dev, "Could not attach to PHY\n");
+		phydev = NULL;
+		return 0;
+	}
+	
+	phydev->advertising &= SUPPORTED_100000baseSR4_Full;
+
+	netdev_dbg(dev, "attached to 100G HIP PHY.\n");
 */
+	return 0;
+}
+
 
 static void s10_100ghip_update_mac_addr(struct altera_s10_100ghip_private *priv, u8 *addr)
 {
@@ -820,7 +852,6 @@ static struct net_device_ops altera_s10_100ghip_netdev_ops = {
 	.ndo_open		= s10_100ghip_open,
 	.ndo_stop		= s10_100ghip_shutdown,
 	.ndo_start_xmit		= s10_100ghip_start_xmit,
-	.ndo_set_mac_address	= eth_mac_addr,
 	.ndo_set_rx_mode	= s10_100ghip_set_rx_mode,
 	.ndo_change_mtu		= s10_100ghip_change_mtu,
 	.ndo_validate_addr	= eth_validate_addr,
@@ -866,7 +897,28 @@ static int altera_s10_100ghip_check(struct altera_s10_100ghip_private *priv)
 	printk("altera_s10_100ghip: sysid = 0x%08x.\n", reg);
 
 	printk("altera_s10_100ghip: Checking status of 100G HIP.\n");
+struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+	struct phy_device *phydev == NULL;
+	int ret;
 
+	priv->phy_iface = PHY_INTERFACE_MODE_NA;
+	priv->oldlink = 0;
+	priv->oldspeed = 0;
+	priv->oldduplex = -1;
+
+	phydev = phy_connect(dev, NULL, &altera_s10_100ghip_adjust_link, priv->phy_iface);
+
+	ret = phy_connect_direct(dev, phydev, &altera_s10_100ghip_adjust_link, priv->phy_iface);
+
+	if (ret != 0) {
+		netdev_err(dev, "Could not attach to PHY\n");
+		phydev = NULL;
+		return 0;
+	}
+	
+	phydev->advertising &= SUPPORTED_100000baseSR4_Full;
+
+	netdev_dbg(dev, "attached to 100G HIP PHY.\n");
 	reg = readl(&priv->eth_reconfig->phy_revision_id);
 	printk("altera_s10_100ghip: PHY Revision ID = 0x%08x\n", reg);
 
@@ -1082,7 +1134,6 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 	spin_lock_init(&priv->rxdma_irq_lock);
 
 	netif_carrier_off(ndev);
-	printk("altera_s10_100ghip: Registering the 100G HIP network device.\n");
 	ret = register_netdev(ndev);
 	if (ret) {
 		dev_err(&pdev->dev, "failed to register 100G HIP net device\n");
@@ -1099,6 +1150,11 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 			 priv->revision & 0xff,
 			 (unsigned long) eth_reconfig->start, priv->rx_irq,
 			 priv->tx_irq);
+
+	ret = init_phy(ndev);
+	if (ret != 0) {
+		netdev_err(ndev, "Cannot attach to PHY (error: %d)\n", ret);
+	}
 
 	return 0;
 

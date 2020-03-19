@@ -554,7 +554,7 @@
 						"rx_csr", "rx_desc", "rx_resp", "tx_csr", "tx_desc",
 						"sysid";
 				interrupt-parent = <&intc>;
-				interrupts = <0 17 4>, <0 49 4>;
+				interrupts = <0 18 4>, <0 17 4>;
 				interrupt-names = "rx_irq", "tx_irq";
 				resets = <&rst LWHPS2FPGA_RESET>;
 				clocks = <&clkmgr STRATIX10_L4_MAIN_CLK>;

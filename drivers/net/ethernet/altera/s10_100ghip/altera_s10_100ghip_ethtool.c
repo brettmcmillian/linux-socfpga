@@ -622,6 +622,12 @@ static void s10_100ghip_get_regs(struct net_device *dev, struct ethtool_regs *re
 		buf[i] = csrrd32(priv->eth_reconfig, 0x900 + i * 4);
 }
 
+static u32 s10_100ghip_get_link(struct net_device *dev) {
+/*	struct altera_s10_100ghip_private *priv = netdev_priv(dev); */
+	return 1;
+
+}
+
 static int s10_100ghip_get_link_ksettings(struct net_device *dev,
 										  struct ethtool_link_ksettings *link_ksettings)
 {
@@ -650,7 +656,7 @@ static const struct ethtool_ops s10_100ghip_ethtool_ops = {
 	.get_drvinfo 		= s10_100ghip_get_drvinfo,
 	.get_regs_len 		= s10_100ghip_reglen,
 	.get_regs 			= s10_100ghip_get_regs,
-	.get_link 			= ethtool_op_get_link,
+	.get_link 			= s10_100ghip_get_link,
 	.get_strings 		= s10_100ghip_gstrings,
 	.get_sset_count 	= s10_100ghip_sset_count,
 	.get_ethtool_stats 	= s10_100ghip_fill_stats,
