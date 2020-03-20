@@ -557,15 +557,18 @@ static int altera_s10_100ghip_phy_get_addr_mdio_create(struct net_device *dev)
 /* Initialize driver's PHY state, and attach to the PHY */
  
 
-static void altera_s10_100ghip_validate(struct phylink *phylink, unsigned long *supported,
+static void altera_s10_100ghip_validate(struct net_device *dev, unsigned long *supported,
 										struct phylink_link_state *state)
 {
-	if (state->interface == PHY_INTERFACE_MODE_NA)
-		state->advertising &= SUPPORTED_100000baseSR4_Full;
+/*	if (state->interface == PHY_INTERFACE_MODE_NA)
+		state->advertising &= SUPPORTED_100000baseSR4_Full;*/
+	__ETHTOOL_DECLARE_LINK_MODE_MASK(mask) = { 0, };
+	phylink_set(mask, FIBRE);
+	phylink_set(mask, 100000baseSR4_Full);
 }
 
-static int altera_s10_100ghip_mac_config(struct net_device *dev, unsigned int mode,
-										 struct phylink_link_state *state)
+static void altera_s10_100ghip_mac_config(struct net_device *dev, unsigned int mode,
+										 const struct phylink_link_state *state)
 {
 	return 0;
 }
@@ -575,7 +578,8 @@ static int altera_s10_100ghip_link_state(struct net_device *dev, struct phylink_
 	return 0;
 }
 
-static void altera_s10_100ghip_mac_link_down(struct net_device *dev, unsigned int mode) {
+static void altera_s10_100ghip_mac_link_down(struct net_device *dev, unsigned int mode)
+{
 
 }
 
@@ -585,7 +589,7 @@ static void altera_s10_100ghip_mac_link_up(struct net_device *dev, unsigned int 
 
 }
 
-static const struct phylink_mac_ops altera_s10_100ghip_phylink_ops {
+static const struct phylink_mac_ops altera_s10_100ghip_phylink_ops = {
 	.validate		= altera_s10_100ghip_validate,
 	.mac_config		= altera_s10_100ghip_mac_config,
 	.mac_link_state	= altera_s10_100ghip_link_state,
@@ -596,7 +600,7 @@ static const struct phylink_mac_ops altera_s10_100ghip_phylink_ops {
 static int init_phy(struct net_device *dev)
 {
 	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
-	struct phylink *phylink = NULL;
+	struct phylink *phylink;
 	
 	int ret;
 
@@ -606,19 +610,14 @@ static int init_phy(struct net_device *dev)
 	priv->oldspeed = 0;
 	priv->oldduplex = -1;
 
-	phylink = phylink_create(dev, priv->device->of_node, priv->phy_iface, altera_s10_100ghip_phylink_ops);
+	phylink = phylink_create(dev, priv->device->of_node, priv->phy_iface, &altera_s10_100ghip_phylink_ops);
 
 	if (phylink == NULL) {
 		netdev_err(dev, "could not create phylink.\n");
 		return 0;
 	}
 
-	phylink->link_config.port = PORT_FIBRE;
-	phylink->link_config.speed = 100000;
-	phylink->link_config.duplex = DUPLEX_FULL;
-	phylink->link_config.an_enabled = false;
-
-	priv->phylink = phylink;
+	priv->phy_link = phylink;
 
 	netdev_dbg(dev, "attached to 100G HIP PHY.\n");
 
@@ -821,8 +820,8 @@ static int s10_100ghip_open(struct net_device *dev)
 
 	spin_unlock_irqrestore(&priv->rxdma_irq_lock, flags);
 
-	if (priv->phylink)
-		phylink_start(priv->phylink);
+	if (priv->phy_link)
+		phylink_start(priv->phy_link);
 
 	napi_enable(&priv->napi);
 	netif_start_queue(dev);
@@ -856,8 +855,8 @@ static int s10_100ghip_shutdown(struct net_device *dev)
 	netif_stop_queue(dev);
 	napi_disable(&priv->napi);
 
-	if (priv->phylink)
-		phylink_stop(priv->phylink);
+	if (priv->phy_link)
+		phylink_stop(priv->phy_link);
 
 	/* Disable DMA interrupts */
 	spin_lock_irqsave(&priv->rxdma_irq_lock, flags);
