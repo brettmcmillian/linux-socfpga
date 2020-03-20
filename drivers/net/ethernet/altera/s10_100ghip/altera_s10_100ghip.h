@@ -58,7 +58,7 @@
 
 #define ALTERA_S10_100GHIP_PAUSE_QUANTA		0xffff
 
-#define SUPPORTED_100000baseSR4_Full		1 << 37;
+#define SUPPORTED_100000baseSR4_Full		1ul << 37;
 
 #define GET_BIT_VALUE(v, bit)		(((v) >> (bit)) & 0x1)
 

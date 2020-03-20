@@ -556,37 +556,11 @@ static int altera_s10_100ghip_phy_get_addr_mdio_create(struct net_device *dev)
 
 /* Initialize driver's PHY state, and attach to the PHY */
  
-static int init_phy(struct net_device *dev)
-{
-	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
-	struct phylink *phylink = NULL;
-	
-	int ret;
-
-	priv->phy_iface = PHY_INTERFACE_MODE_NA;
-	priv->phy_name = "internal PHY";
-	priv->oldlink = 0;
-	priv->oldspeed = 0;
-	priv->oldduplex = -1;
-
-	phylink = phylink_create(dev, priv->device->of_node, priv->phy_iface, altera_s10_100ghip_phylink_ops);
-
-	phylink->link_config.port = PORT_FIBRE;
-	phylink->link_config.speed = 100000;
-	phylink->link_config.duplex = DUPLEX_FULL;
-	phylink->link_config.an_enabled = false;
-
-	priv->phylink = phylink;
-
-	netdev_dbg(dev, "attached to 100G HIP PHY.\n");
-
-	return 0;
-}
 
 static void altera_s10_100ghip_validate(struct phylink *phylink, unsigned long *supported,
 										struct phylink_link_state *state)
 {
-	if (state->interface = PHY_INTERFACE_MODE_NA)
+	if (state->interface == PHY_INTERFACE_MODE_NA)
 		state->advertising &= SUPPORTED_100000baseSR4_Full;
 }
 
@@ -619,6 +593,37 @@ static const struct phylink_mac_ops altera_s10_100ghip_phylink_ops {
 	.mac_link_down	= altera_s10_100ghip_mac_link_down,
 };
 
+static int init_phy(struct net_device *dev)
+{
+	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+	struct phylink *phylink = NULL;
+	
+	int ret;
+
+	priv->phy_iface = PHY_INTERFACE_MODE_NA;
+	priv->phy_name = "internal PHY";
+	priv->oldlink = 0;
+	priv->oldspeed = 0;
+	priv->oldduplex = -1;
+
+	phylink = phylink_create(dev, priv->device->of_node, priv->phy_iface, altera_s10_100ghip_phylink_ops);
+
+	if (phylink == NULL) {
+		netdev_err(dev, "could not create phylink.\n");
+		return 0;
+	}
+
+	phylink->link_config.port = PORT_FIBRE;
+	phylink->link_config.speed = 100000;
+	phylink->link_config.duplex = DUPLEX_FULL;
+	phylink->link_config.an_enabled = false;
+
+	priv->phylink = phylink;
+
+	netdev_dbg(dev, "attached to 100G HIP PHY.\n");
+
+	return 0;
+}
 
 static void s10_100ghip_update_mac_addr(struct altera_s10_100ghip_private *priv, u8 *addr)
 {
