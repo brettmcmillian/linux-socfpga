@@ -57,8 +57,6 @@ void s10_msgdma_check(struct altera_s10_100ghip_private *priv)
 
 	reg = csrrd32(priv->tx_dma_csr, msgdma_csroffs(comp_cfg2));
 	printk("altera_s10_100ghip: TX Component Config 2: 0x%08x\n", reg);
-
-	return 0;
 }
 
 
