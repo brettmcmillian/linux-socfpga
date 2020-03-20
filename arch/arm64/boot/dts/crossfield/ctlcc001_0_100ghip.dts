@@ -88,6 +88,12 @@
 
 &ethhip_0_s10 {
 	status = "okay";
+	phy-mode = "internal";
+
+	fixed-link {
+		speed = <100000>;
+		full-duplex;
+	};
 };
 
 /*

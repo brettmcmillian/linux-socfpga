@@ -37,6 +37,7 @@
 #include <linux/of_net.h>
 #include <linux/of_platform.h>
 #include <linux/phy.h>
+#include <linux/phylink.h>
 #include <linux/platform_device.h>
 #include <linux/skbuff.h>
 #include <asm/cacheflush.h>
@@ -530,7 +531,7 @@ out:
  * function converts those variables into the appropriate
  * register values, and can bring down the device if needed.
  */
-
+/*
 static void altera_s10_100ghip_adjust_link(struct net_device *dev)
 {
 	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
@@ -540,7 +541,7 @@ static void altera_s10_100ghip_adjust_link(struct net_device *dev)
 		phy_print_status(phydev);
 }
 
-/*
+
 static struct phy_device *connect_local_phy(struct net_device *dev)
 {
 
@@ -558,7 +559,8 @@ static int altera_s10_100ghip_phy_get_addr_mdio_create(struct net_device *dev)
 static int init_phy(struct net_device *dev)
 {
 	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
-	struct phy_device *phydev = NULL;
+	struct phylink *phylink = NULL;
+	
 	int ret;
 
 	priv->phy_iface = PHY_INTERFACE_MODE_NA;
@@ -567,27 +569,55 @@ static int init_phy(struct net_device *dev)
 	priv->oldspeed = 0;
 	priv->oldduplex = -1;
 
-	phydev = phy_connect(dev, priv->phy_name, &altera_s10_100ghip_adjust_link, priv->phy_iface);
+	phylink = phylink_create(dev, priv->device->of_node, priv->phy_iface, altera_s10_100ghip_phylink_ops);
 
-	if (phydev == ERR_PTR(-ENODEV)) {
-		netdev_err(dev, "Could not connect to PHY\n");
-		return 0;
-	}
+	phylink->link_config.port = PORT_FIBRE;
+	phylink->link_config.speed = 100000;
+	phylink->link_config.duplex = DUPLEX_FULL;
+	phylink->link_config.an_enabled = false;
 
-	ret = phy_connect_direct(dev, phydev, &altera_s10_100ghip_adjust_link, priv->phy_iface);
-
-	if (ret != 0) {
-		netdev_err(dev, "Could not attach to PHY\n");
-		phydev = NULL;
-		return 0;
-	}
-	
-	phydev->advertising &= SUPPORTED_100000baseSR4_Full;
+	priv->phylink = phylink;
 
 	netdev_dbg(dev, "attached to 100G HIP PHY.\n");
 
 	return 0;
 }
+
+static void altera_s10_100ghip_validate(struct phylink *phylink, unsigned long *supported,
+										struct phylink_link_state *state)
+{
+	if (state->interface = PHY_INTERFACE_MODE_NA)
+		state->advertising &= SUPPORTED_100000baseSR4_Full;
+}
+
+static int altera_s10_100ghip_mac_config(struct net_device *dev, unsigned int mode,
+										 struct phylink_link_state *state)
+{
+	return 0;
+}
+
+static int altera_s10_100ghip_link_state(struct net_device *dev, struct phylink_link_state *state)
+{
+	return 0;
+}
+
+static void altera_s10_100ghip_mac_link_down(struct net_device *dev, unsigned int mode) {
+
+}
+
+static void altera_s10_100ghip_mac_link_up(struct net_device *dev, unsigned int mode,
+											 struct phy_device *phy_dev)
+{
+
+}
+
+static const struct phylink_mac_ops altera_s10_100ghip_phylink_ops {
+	.validate		= altera_s10_100ghip_validate,
+	.mac_config		= altera_s10_100ghip_mac_config,
+	.mac_link_state	= altera_s10_100ghip_link_state,
+	.mac_link_up	= altera_s10_100ghip_mac_link_up,
+	.mac_link_down	= altera_s10_100ghip_mac_link_down,
+};
 
 
 static void s10_100ghip_update_mac_addr(struct altera_s10_100ghip_private *priv, u8 *addr)
@@ -786,8 +816,8 @@ static int s10_100ghip_open(struct net_device *dev)
 
 	spin_unlock_irqrestore(&priv->rxdma_irq_lock, flags);
 
-	if (dev->phydev)
-		phy_start(dev->phydev);
+	if (priv->phylink)
+		phylink_start(priv->phylink);
 
 	napi_enable(&priv->napi);
 	netif_start_queue(dev);
@@ -820,6 +850,9 @@ static int s10_100ghip_shutdown(struct net_device *dev)
 
 	netif_stop_queue(dev);
 	napi_disable(&priv->napi);
+
+	if (priv->phylink)
+		phylink_stop(priv->phylink);
 
 	/* Disable DMA interrupts */
 	spin_lock_irqsave(&priv->rxdma_irq_lock, flags);
@@ -854,8 +887,8 @@ static int s10_100ghip_shutdown(struct net_device *dev)
 }
 
 static struct net_device_ops altera_s10_100ghip_netdev_ops = {
-	.ndo_open		= s10_100ghip_open,
-	.ndo_stop		= s10_100ghip_shutdown,
+	.ndo_open			= s10_100ghip_open,
+	.ndo_stop			= s10_100ghip_shutdown,
 	.ndo_start_xmit		= s10_100ghip_start_xmit,
 	.ndo_set_rx_mode	= s10_100ghip_set_rx_mode,
 	.ndo_change_mtu		= s10_100ghip_change_mtu,
@@ -1142,7 +1175,7 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 
 	ret = init_phy(ndev);
 	if (ret != 0) {
-		netdev_err(ndev, "Cannot attach to PHY (error: %d)\n", ret);
+		netdev_err(ndev, "Cannot attach to fixed PHY (error: %d)\n", ret);
 	}
 
 	return 0;

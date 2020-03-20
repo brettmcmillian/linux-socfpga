@@ -552,7 +552,7 @@ struct altera_s10_100ghip_private {
 	spinlock_t rxdma_irq_lock;
 
 	/* PHY */
-	int phy_addr;		/* PHY's MDIO address, -1 for autodetection */
+	struct phylink phylink;		/* PHY's MDIO address, -1 for autodetection */
 	phy_interface_t phy_iface;
 	const char * phy_name;
 	int oldspeed;
