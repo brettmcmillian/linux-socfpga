@@ -554,14 +554,12 @@ static int altera_s10_100ghip_phy_get_addr_mdio_create(struct net_device *dev)
 }
 */
 
-/* Initialize driver's PHY state, and attach to the PHY */
+/* Setup PHYLINK to control the PHY through the MAC */
  
 
 static void altera_s10_100ghip_validate(struct net_device *dev, unsigned long *supported,
 										struct phylink_link_state *state)
 {
-/*	if (state->interface == PHY_INTERFACE_MODE_NA)
-		state->advertising &= SUPPORTED_100000baseSR4_Full;*/
 	__ETHTOOL_DECLARE_LINK_MODE_MASK(mask) = { 0, };
 	phylink_set(mask, FIBRE);
 	phylink_set(mask, 100000baseSR4_Full);
@@ -575,18 +573,36 @@ static void altera_s10_100ghip_mac_config(struct net_device *dev, unsigned int m
 
 static int altera_s10_100ghip_link_state(struct net_device *dev, struct phylink_link_state *state)
 {
+	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+	u32 reg;
+
+	reg = readl(&priv->eth_reconfig->phy_tx_datapath_ready);
+	reg &= PHY_TX_PCS_READY;
+	if (reg == 0x1)
+		netif_carrier_on(dev);
+	else
+		netif_carrier_off(dev);
+
 	return 0;
 }
 
 static void altera_s10_100ghip_mac_link_down(struct net_device *dev, unsigned int mode)
 {
-
+	netif_carrier_off(dev);
 }
 
 static void altera_s10_100ghip_mac_link_up(struct net_device *dev, unsigned int mode,
 											 struct phy_device *phy_dev)
 {
+		struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+	u32 reg;
 
+	reg = readl(&priv->eth_reconfig->phy_tx_datapath_ready);
+	reg &= PHY_TX_PCS_READY;
+	if (reg == 0x1)
+		netif_carrier_on(dev);
+	else
+		printk("altera_s10_100ghip: TX Datapath is not ready\n");
 }
 
 static const struct phylink_mac_ops altera_s10_100ghip_phylink_ops = {
