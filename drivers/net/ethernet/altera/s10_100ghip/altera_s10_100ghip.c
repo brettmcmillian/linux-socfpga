@@ -957,7 +957,7 @@ static int altera_s10_100ghip_check(struct altera_s10_100ghip_private *priv)
 	printk("altera_s10_100ghip: Checking status of 100G HIP.\n");
 
 	/* Read the ANLT Sequencer Status Register */
-	reg = readl(&priv->eth_reconfig->anlt_sequencer_status);
+/*	reg = readl(&priv->eth_reconfig->anlt_sequencer_status);
 	reg &= ANTL_SEQ_LINK_READY;
 	if (reg == 0x1)
 		printk("altera_s10_100ghip: ANLT Sequencer is ready.\n");
@@ -991,9 +991,9 @@ static int altera_s10_100ghip_check(struct altera_s10_100ghip_private *priv)
 	reg &= ANLT_SEQ_RECONFIG_MODE_100G;
 	if (reg == 0x1)
 		printk("altera_s10_100ghip: ANLT Sequencer 100G data mode.\n");
-
+*/
 	/* Read the ANLT Autonegotiation Status Register */
-	reg = readl(&priv->eth_reconfig->anlt_an_status);
+/*	reg = readl(&priv->eth_reconfig->anlt_an_status);
 	reg &= ANLT_ANSTAT_PAGE_RECV;
 	if (reg == 0x1)
 		printk("altera_s10_100ghip: ANLT AN page received.\n");
@@ -1095,9 +1095,9 @@ static int altera_s10_100ghip_check(struct altera_s10_100ghip_private *priv)
 	reg &= ANLT_ANSTAT_PORT_TYPE_UNKNOWN9;
 	if (reg == 0x1)
 		printk("altera_s10_100ghip: ANLT port type unknown9.\n");
-
+*/
 	/* Read the ANLT Link Training Status Register 1 */
-	reg = readl(&priv->eth_reconfig->anlt_an_status);
+/*	reg = readl(&priv->eth_reconfig->anlt_an_status);
 	reg &= ANLT_LTSTAT1_TRAINED_LN0;
 	if (reg == 0x1)
 		printk("altera_s10_100ghip: ANLT link training successful on lane 0.\n");
@@ -1169,7 +1169,7 @@ static int altera_s10_100ghip_check(struct altera_s10_100ghip_private *priv)
 	reg &= ANLT_LTSTAT1_FAILURE_LN3;
 	if (reg == 0x1)
 		printk("altera_s10_100ghip: ANLT link training failed on lane 3.\n");
-
+*/
 	/* Check to see if the PHY TX datapath is ready */
 	reg = readl(&priv->eth_reconfig->phy_tx_datapath_ready);
 	reg &= PHY_TX_PCS_READY;

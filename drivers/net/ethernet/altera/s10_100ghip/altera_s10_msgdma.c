@@ -46,17 +46,53 @@ void s10_msgdma_check(struct altera_s10_100ghip_private *priv)
 
 	printk("altera_s10_100ghip: Checking status of mSGDMA cores.\n");
 
+	reg = csrrd32(priv->rx_dma_csr, msgdma_csroffs(status));
+	printk("altera_s10_100ghip: RX Status: 0x%08x\n", reg);
+
+	reg = csrrd32(priv->rx_dma_csr, msgdma_csroffs(control));
+	printk("altera_s10_100ghip: RX Control: 0x%08x\n", reg);
+
+	reg = csrrd32(priv->rx_dma_csr, msgdma_csroffs(rw_fill_level));
+	printk("altera_s10_100ghip: RX Write/Read Fill Level: 0x%08x\n", reg);
+
+	reg = csrrd32(priv->rx_dma_csr, msgdma_csroffs(resp_fill_level));
+	printk("altera_s10_100ghip: RX Response Fill Level: 0x%08x\n", reg);
+
+	reg = csrrd32(priv->rx_dma_csr, msgdma_csroffs(rw_seq_num));
+	printk("altera_s10_100ghip: RX Write/Read Sequence Number: 0x%08x\n", reg);
+
 	reg = csrrd32(priv->rx_dma_csr, msgdma_csroffs(comp_cfg1));
 	printk("altera_s10_100ghip: RX Component Config 1: 0x%08x\n", reg);
 
 	reg = csrrd32(priv->rx_dma_csr, msgdma_csroffs(comp_cfg2));
 	printk("altera_s10_100ghip: RX Component Config 2: 0x%08x\n", reg);
 
+	reg = csrrd32(priv->rx_dma_csr, msgdma_csroffs(comp_type_ver));
+	printk("altera_s10_100ghip: RX Component Type & Version: 0x%08x\n", reg);
+
+	reg = csrrd32(priv->tx_dma_csr, msgdma_csroffs(status));
+	printk("altera_s10_100ghip: TX Status: 0x%08x\n", reg);
+
+	reg = csrrd32(priv->tx_dma_csr, msgdma_csroffs(control));
+	printk("altera_s10_100ghip: TX Control: 0x%08x\n", reg);
+
+	reg = csrrd32(priv->tx_dma_csr, msgdma_csroffs(rw_fill_level));
+	printk("altera_s10_100ghip: TX Write/Read Fill Level: 0x%08x\n", reg);
+
+	reg = csrrd32(priv->tx_dma_csr, msgdma_csroffs(resp_fill_level));
+	printk("altera_s10_100ghip: TX Response Fill Level: 0x%08x\n", reg);
+
+	reg = csrrd32(priv->tx_dma_csr, msgdma_csroffs(rw_seq_num));
+	printk("altera_s10_100ghip: TX Write/Read Sequence Number: 0x%08x\n", reg);
+
 	reg = csrrd32(priv->tx_dma_csr, msgdma_csroffs(comp_cfg1));
 	printk("altera_s10_100ghip: TX Component Config 1: 0x%08x\n", reg);
 
 	reg = csrrd32(priv->tx_dma_csr, msgdma_csroffs(comp_cfg2));
 	printk("altera_s10_100ghip: TX Component Config 2: 0x%08x\n", reg);
+
+	reg = csrrd32(priv->tx_dma_csr, msgdma_csroffs(comp_type_ver));
+	printk("altera_s10_100ghip: TX Component Type & Version: 0x%08x\n", reg);
 }
 
 
