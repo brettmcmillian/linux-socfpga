@@ -737,8 +737,7 @@ static int init_100ghip_pcs(struct net_device *dev)
 	if (s10_100ghip_pcs_scratch_test(priv, 0x00000000) &&
 		s10_100ghip_pcs_scratch_test(priv, 0xFFFFFFFF) &&
 		s10_100ghip_pcs_scratch_test(priv, 0xa5a5a5a5)) {
-		netdev_info(dev, "PHY scratch test succeeded. PHY Revision ID: 0x%08x\n",
-				readl(&priv->eth_reconfig->phy_revision_id));
+		netdev_info(dev, "PHY scratch memory test succeeded.\n");
 	} else {
 		netdev_err(dev, "PHY scratch memory test failed.\n");
 		return -ENOMEM;
