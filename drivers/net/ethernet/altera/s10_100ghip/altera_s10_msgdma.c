@@ -44,7 +44,7 @@ void s10_msgdma_check(struct altera_s10_100ghip_private *priv)
 {
 	u32 reg;
 
-	printk("altera_s10_100ghip: Checking status of mSGDMA cores.\n");
+	printk("altera_s10_100ghip: Checking status of mSGDMA cores:\n");
 
 	reg = csrrd32(priv->rx_dma_csr, msgdma_csroffs(status));
 	printk("altera_s10_100ghip: RX Status: 0x%08x\n", reg);

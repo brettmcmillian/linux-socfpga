@@ -640,7 +640,7 @@ static int s10_100ghip_get_link_ksettings(struct net_device *dev,
 	link_ksettings->base.transceiver	= XCVR_INTERNAL;
 	link_ksettings->base.speed			= SPEED_100000;
 	link_ksettings->base.duplex			= DUPLEX_FULL;
-	link_ksettings->base.autoneg		= AUTONEG_ENABLE;
+	link_ksettings->base.autoneg		= AUTONEG_DISABLE;
 
 	return 0;
 

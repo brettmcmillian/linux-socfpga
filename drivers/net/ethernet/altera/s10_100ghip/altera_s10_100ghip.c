@@ -110,7 +110,7 @@ static void s10_100ghip_pcs_write(struct altera_s10_100ghip_private *priv, int r
 /* Check PCS scratch memory */
 static int s10_100ghip_pcs_scratch_test(struct altera_s10_100ghip_private *priv, u32 value)
 {
-	writel(&priv->eth_reconfig->phy_scratch, value);
+	writel(value, &priv->eth_reconfig->phy_scratch);
 	return (readl(&priv->eth_reconfig->phy_scratch) == value);
 }
 
@@ -732,18 +732,18 @@ static void s10_100ghip_set_rx_mode(struct net_device *dev)
 static int init_100ghip_pcs(struct net_device *dev)
 {
 	//For now, just let the PCS come up in the default state.
-/*	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
 
 	if (s10_100ghip_pcs_scratch_test(priv, 0x00000000) &&
 		s10_100ghip_pcs_scratch_test(priv, 0xFFFFFFFF) &&
 		s10_100ghip_pcs_scratch_test(priv, 0xa5a5a5a5)) {
-		netdev_info(dev, "PHY Revision ID: 0x%08x\n",
+		netdev_info(dev, "PHY scratch test succeeded. PHY Revision ID: 0x%08x\n",
 				readl(&priv->eth_reconfig->phy_revision_id));
 	} else {
 		netdev_err(dev, "PHY scratch memory test failed.\n");
 		return -ENOMEM;
 	}
-*/
+
 	return 0;
 }
 
@@ -954,7 +954,7 @@ static int altera_s10_100ghip_check(struct altera_s10_100ghip_private *priv)
 	reg = readl(priv->sysid);
 	printk("altera_s10_100ghip: sysid = 0x%08x.\n", reg);
 
-	printk("altera_s10_100ghip: Checking status of 100G HIP.\n");
+	printk("altera_s10_100ghip: Checking status of 100G HIP:\n");
 
 	/* Read the ANLT Sequencer Status Register */
 /*	reg = readl(&priv->eth_reconfig->anlt_sequencer_status);
