@@ -956,6 +956,136 @@ static int altera_s10_100ghip_check(struct altera_s10_100ghip_private *priv)
 
 	printk("altera_s10_100ghip: Checking status of 100G HIP.\n");
 
+	/* Read the ANLT Sequencer Status Register */
+	reg = readl(&priv->eth_reconfig->anlt_sequencer_status);
+	if ((reg & ANTL_SEQ_LINK_READY) == 0x1)
+		printk("altera_s10_100ghip: ANLT Sequencer is ready.\n");
+	else
+		printk("altera_s10_100ghip: ANLT Sequencer is not ready.\n");
+	if ((reg & ANLT_SEQ_AN_TIMEOUT) == 0x1)
+		printk("altera_s10_100ghip: ANLT Sequencer AN timed out.\n");
+	else
+		printk("altera_s10_100ghip: ANLT Sequencer AN did not time out.\n");
+	if ((reg & ANLT_SEQ_LT_TIMEOUT) == 0x1)
+		printk("altera_s10_100ghip: ANLT Sequencer LT timed out.\n");
+	else
+		printk("altera_s10_100ghip: ANLT Sequencer LT did not time out.\n");
+	if ((reg & ANLT_SEQ_RECONFIG_MODE_AN) == 0x1)
+		printk("altera_s10_100ghip: ANLT Sequencer AN mode.\n");
+	if ((reg & ANLT_SEQ_RECONFIG_MODE_LT) == 0x1)
+		printk("altera_s10_100ghip: ANLT Sequencer LT mode.\n");
+	if ((reg & ANLT_SEQ_RECONFIG_MODE_50G) == 0x1)
+		printk("altera_s10_100ghip: ANLT Sequencer 50G data mode.\n");
+`	if ((reg & ANLT_SEQ_RECONFIG_MODE_100G) == 0x1)
+		printk("altera_s10_100ghip: ANLT Sequencer 100G data mode.\n");
+
+	/* Read the ANLT Autonegotiation Status Register */
+	reg = readl(&priv->eth_reconfig->anlt_an_status);
+	if ((reg & ANLT_ANSTAT_PAGE_RECV) == 0x1)
+		printk("altera_s10_100ghip: ANLT AN page received.\n");
+	else
+		printk("altera_s10_100ghip: ANLT AN page not received.\n");
+	if ((reg & ANLT_ANSTAT_COMPLETE) == 0x1)
+		printk("altera_s10_100ghip: ANLT AN complet.\n");
+	else
+		printk("altera_s10_100ghip: ANLT AN not complete.\n");
+	if ((reg & ANLT_ANSTAT_ADV_REMOTE_FAULT) == 0x1)
+		printk("altera_s10_100ghip: ANLT AN fault sent to link partner.\n");
+	else
+		printk("altera_s10_100ghip: ANLT AN no fault sent to link partner.\n");
+	if ((reg & ANLT_ANSTAT_RXSM_IDLE) == 0x1)
+		printk("altera_s10_100ghip: ANLT AN RXSM Idle State.\n");
+	else
+		printk("altera_s10_100ghip: ANLT AN RXSM normal.\n");
+	if ((reg & ANLT_ANSTAT_ABILITY) == 0x1)
+		printk("altera_s10_100ghip: ANLT PHY able to perform AN.\n");
+	else
+		printk("altera_s10_100ghip: ANLT PHY not able to perform AN.\n");
+	if ((reg & ANLT_ANSTAT_STATUS) == 0x1)
+		printk("altera_s10_100ghip: ANLT AN link is up.\n");
+	else
+		printk("altera_s10_100ghip: ANLT AN link is down.\n");
+	if ((reg & ANLT_ANSTAT_LP_FAILURE) == 0x1)
+		printk("altera_s10_100ghip: ANLT link partner able to AN.\n");
+	else
+		printk("altera_s10_100ghip: ANLT link partner unable to AN.\n");
+	if ((reg & ANLT_ANSTAT_FAILURE) == 0x1)
+		printk("altera_s10_100ghip: ANLT AN failure detected.\n");
+	else
+		printk("altera_s10_100ghip: ANLT AN no failure detected.\n");
+	if ((reg & ANLT_ANSTAT_NEXT_PG_RECV) == 0x1)
+		printk("altera_s10_100ghip: ANLT consortium next page received.\n");
+	else
+		printk("altera_s10_100ghip: ANLT consortium next page not received.\n");
+	if ((reg & ANLT_ANSTAT_RESOLVE_PHY_FAIL) == 0x1)
+		printk("altera_s10_100ghip: ANLT AN complete, but unable to resolve PHY.\n");
+	if ((reg & ANLT_ANSTAT_PORT_TYPE_UNKNOWN1) == 0x1)
+		printk("altera_s10_100ghip: ANLT port type unknown1.\n");
+	if ((reg & ANLT_ANSTAT_PORT_TYPE_UNKNOWN2) == 0x1)
+		printk("altera_s10_100ghip: ANLT port type unknown2.\n");
+	if ((reg & ANLT_ANSTAT_PORT_TYPE_UNKNOWN3) == 0x1)
+		printk("altera_s10_100ghip: ANLT port type unknown3.\n");
+	if ((reg & ANLT_ANSTAT_PORT_TYPE_UNKNOWN4) == 0x1)
+		printk("altera_s10_100ghip: ANLT port type unknown4.\n");
+	if ((reg & ANLT_ANSTAT_PORT_TYPE_UNKNOWN5) == 0x1)
+		printk("altera_s10_100ghip: ANLT port type unknown5.\n");
+	if ((reg & ANLT_ANSTAT_PORT_TYPE_UNKNOWN6) == 0x1)
+		printk("altera_s10_100ghip: ANLT port type unknown6.\n");
+	if ((reg & ANLT_ANSTAT_PORT_TYPE_KR4) == 0x1)
+		printk("altera_s10_100ghip: ANLT port type 100GBASE-KR4.\n");
+	if ((reg & ANLT_ANSTAT_PORT_TYPE_CR4) == 0x1)
+		printk("altera_s10_100ghip: ANLT port type 100GBASE-CR4.\n");
+	if ((reg & ANLT_ANSTAT_PORT_TYPE_UNKNOWN7) == 0x1)
+		printk("altera_s10_100ghip: ANLT port type unknown7.\n");
+	if ((reg & ANLT_ANSTAT_PORT_TYPE_UNKNOWN8) == 0x1)
+		printk("altera_s10_100ghip: ANLT port type unknown8.\n");
+	if ((reg & ANLT_ANSTAT_PORT_TYPE_UNKNOWN9) == 0x1)
+		printk("altera_s10_100ghip: ANLT port type unknown9.\n");
+
+	/* Read the ANLT Link Training Status Register 1 */
+	reg = readl(&priv->eth_reconfig->anlt_an_status);
+	if ((reg & ANLT_LTSTAT1_TRAINED_LN0) == 0x1)
+		printk("altera_s10_100ghip: ANLT link training successful on lane 0.\n");
+	else
+		printk("altera_s10_100ghip: ANLT link training unsuccessful on lane 0.\n");
+	if ((reg & ANLT_LTSTAT1_FRAME_LOCK_LN0) == 0x1)
+		printk("altera_s10_100ghip: ANLT link training frame delineation detected on lane 0.\n");
+	if ((reg & ANLT_LTSTAT1_STARTUP_LN0) == 0x1)
+		printk("altera_s10_100ghip: ANLT link training start-up protocol in progress on lane 0.\n");
+	if ((reg & ANLT_LTSTAT1_FAILURE_LN0) == 0x1)
+		printk("altera_s10_100ghip: ANLT link training failed on lane 0.\n");
+	if ((reg & ANLT_LTSTAT1_TRAINED_LN1) == 0x1)
+		printk("altera_s10_100ghip: ANLT link training successful on lane 1.\n");
+	else
+		printk("altera_s10_100ghip: ANLT link training unsuccessful on lane 1.\n");
+	if ((reg & ANLT_LTSTAT1_FRAME_LOCK_LN1) == 0x1)
+		printk("altera_s10_100ghip: ANLT link training frame delineation detected on lane 1.\n");
+	if ((reg & ANLT_LTSTAT1_STARTUP_LN1) == 0x1)
+		printk("altera_s10_100ghip: ANLT link training start-up protocol in progress on lane 1.\n");
+	if ((reg & ANLT_LTSTAT1_FAILURE_LN1) == 0x1)
+		printk("altera_s10_100ghip: ANLT link training failed on lane 1.\n");
+	if ((reg & ANLT_LTSTAT1_TRAINED_LN2) == 0x1)
+		printk("altera_s10_100ghip: ANLT link training successful on lane 2.\n");
+	else
+		printk("altera_s10_100ghip: ANLT link training unsuccessful on lane 2.\n");
+	if ((reg & ANLT_LTSTAT1_FRAME_LOCK_LN2) == 0x1)
+		printk("altera_s10_100ghip: ANLT link training frame delineation detected on lane 2.\n");
+	if ((reg & ANLT_LTSTAT1_STARTUP_LN2) == 0x1)
+		printk("altera_s10_100ghip: ANLT link training start-up protocol in progress on lane 2.\n");
+	if ((reg & ANLT_LTSTAT1_FAILURE_LN2) == 0x1)
+		printk("altera_s10_100ghip: ANLT link training failed on lane 2.\n");
+	if ((reg & ANLT_LTSTAT1_TRAINED_LN3) == 0x1)
+		printk("altera_s10_100ghip: ANLT link training successful on lane 3.\n");
+	else
+		printk("altera_s10_100ghip: ANLT link training unsuccessful on lane 3.\n");
+	if ((reg & ANLT_LTSTAT1_FRAME_LOCK_LN3) == 0x1)
+		printk("altera_s10_100ghip: ANLT link training frame delineation detected on lane 3.\n");
+	if ((reg & ANLT_LTSTAT1_STARTUP_LN3) == 0x1)
+		printk("altera_s10_100ghip: ANLT link training start-up protocol in progress on lane 3.\n");
+	if ((reg & ANLT_LTSTAT1_FAILURE_LN3) == 0x1)
+		printk("altera_s10_100ghip: ANLT link training failed on lane 3.\n");
+
+	/* Check to see if the PHY TX datapath is ready */
 	reg = readl(&priv->eth_reconfig->phy_tx_datapath_ready);
 	reg &= PHY_TX_PCS_READY;
 	if (reg == 0x1)

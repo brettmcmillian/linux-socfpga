@@ -632,19 +632,21 @@ static u32 s10_100ghip_get_link(struct net_device *dev) {
 static int s10_100ghip_get_link_ksettings(struct net_device *dev,
 										  struct ethtool_link_ksettings *link_ksettings)
 {
-/*	ethtool_link_ksettings_zero_link_mode(link_ksettings, supported);
+	ethtool_link_ksettings_zero_link_mode(link_ksettings, supported);
 	ethtool_link_ksettings_add_link_mode(link_ksettings, supported, 100000baseSR4_Full);
 	ethtool_link_ksettings_add_link_mode(link_ksettings, advertising, 100000baseSR4_Full);
 
-	link_ksettings->base.speed = SPEED_100000;
-	link_ksettings->base.duplex = DUPLEX_FULL;
-	link_ksettings->base.autoneg = AUTONEG_DISABLE;
+	link_ksettings->base.port 			= PORT_FIBRE;
+	link_ksettings->base.transceiver	= XCVR_INTERNAL;
+	link_ksettings->base.speed			= SPEED_100000;
+	link_ksettings->base.duplex			= DUPLEX_FULL;
+	link_ksettings->base.autoneg		= AUTONEG_ENABLE;
 
 	return 0;
-*/
-	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
 
-	return phylink_ethtool_ksettings_get(priv->phy_link, link_ksettings);
+/*	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+
+	return phylink_ethtool_ksettings_get(priv->phy_link, link_ksettings);*/
 }
 
 static int s10_100ghip_set_link_ksettings(struct net_device *dev,
@@ -652,15 +654,15 @@ static int s10_100ghip_set_link_ksettings(struct net_device *dev,
 {
 /*	link_ksettings->base.speed = SPEED_100000;
 	link_ksettings->base.duplex = DUPLEX_FULL;
-	link_ksettings->base.autoneg = AUTONEG_DISABLE;
+	link_ksettings->base.autoneg = AUTONEG_DISABLE;*/
 	
 	return 0;
-*/
 
+/*
 	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
 
 	return phylink_ethtool_ksettings_set(priv->phy_link, link_ksettings);
-
+*/
 	
 }
 

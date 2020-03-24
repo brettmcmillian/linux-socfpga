@@ -62,75 +62,53 @@
 
 #define GET_BIT_VALUE(v, bit)		(((v) >> (bit)) & 0x1)
 
-/* MAC Command_Config Register Bit Definitions
+#define ANTL_SEQ_LINK_READY			BIT(0)
+#define ANLT_SEQ_AN_TIMEOUT			BIT(1)
+#define ANLT_SEQ_LT_TIMEOUT			BIT(2)
+#define ANLT_SEQ_RECONFIG_MODE_AN	BIT(8)
+#define ANLT_SEQ_RECONFIG_MODE_LT	BIT(9)
+#define ANLT_SEQ_RECONFIG_MODE_50G	BIT(12)
+#define ANLT_SEQ_RECONFIG_MODE_100G	BIT(13)
 
-#define MAC_CMDCFG_TX_ENA					BIT(0)
-#define MAC_CMDCFG_RX_ENA					BIT(1)
-#define MAC_CMDCFG_XON_GEN					BIT(2)
-#define MAC_CMDCFG_ETH_SPEED				BIT(3)
-#define MAC_CMDCFG_PROMIS_EN				BIT(4)
-#define MAC_CMDCFG_PAD_EN					BIT(5)
-#define MAC_CMDCFG_CRC_FWD					BIT(6)
-#define MAC_CMDCFG_PAUSE_FWD				BIT(7)
-#define MAC_CMDCFG_PAUSE_IGNORE				BIT(8)
-#define MAC_CMDCFG_TX_ADDR_INS				BIT(9)
-#define MAC_CMDCFG_HD_ENA					BIT(10)
-#define MAC_CMDCFG_EXCESS_COL				BIT(11)
-#define MAC_CMDCFG_LATE_COL					BIT(12)
-#define MAC_CMDCFG_SW_RESET					BIT(13)
-#define MAC_CMDCFG_MHASH_SEL				BIT(14)
-#define MAC_CMDCFG_LOOP_ENA					BIT(15)
-#define MAC_CMDCFG_TX_ADDR_SEL(v)			(((v) & 0x7) << 16)
-#define MAC_CMDCFG_MAGIC_ENA				BIT(19)
-#define MAC_CMDCFG_SLEEP					BIT(20)
-#define MAC_CMDCFG_WAKEUP					BIT(21)
-#define MAC_CMDCFG_XOFF_GEN					BIT(22)
-#define MAC_CMDCFG_CNTL_FRM_ENA				BIT(23)
-#define MAC_CMDCFG_NO_LGTH_CHECK			BIT(24)
-#define MAC_CMDCFG_ENA_10					BIT(25)
-#define MAC_CMDCFG_RX_ERR_DISC				BIT(26)
-#define MAC_CMDCFG_DISABLE_READ_TIMEOUT		BIT(27)
-#define MAC_CMDCFG_CNT_RESET				BIT(31)
+#define ANLT_ANSTAT_PAGE_RECV			BIT(1)
+#define ANLT_ANSTAT_COMPLETE			BIT(2)
+#define ANLT_ANSTAT_ADV_REMOTE_FAULT	BIT(3)
+#define ANLT_ANSTAT_RXSM_IDLE			BIT(4)
+#define ANLT_ANSTAT_ABILITY				BIT(5)
+#define ANLT_ANSTAT_STATUS				BIT(6)
+#define ANLT_ANSTAT_LP_FAILURE			BIT(7)
+#define ANLT_ANSTAT_FAILURE				BIT(9)
+#define ANLT_ANSTAT_NEXT_PG_RECV		BIT(10)
+#define ANLT_ANSTAT_RESOLVE_PHY_FAIL	BIT(11)
+#define ANLT_ANSTAT_PORT_TYPE_UNKNOWN1	BIT(12)
+#define ANLT_ANSTAT_PORT_TYPE_UNKNOWN2	BIT(13)
+#define ANLT_ANSTAT_PORT_TYPE_UNKNOWN3	BIT(14)
+#define ANLT_ANSTAT_PORT_TYPE_UNKNOWN4	BIT(15)
+#define ANLT_ANSTAT_PORT_TYPE_UNKNOWN5	BIT(16)
+#define ANLT_ANSTAT_PORT_TYPE_UNKNOWN6	BIT(17)
+#define ANLT_ANSTAT_PORT_TYPE_KR4		BIT(18)
+#define ANLT_ANSTAT_PORT_TYPE_CR4		BIT(19)
+#define ANLT_ANSTAT_PORT_TYPE_UNKNOWN7	BIT(20)
+#define ANLT_ANSTAT_PORT_TYPE_UNKNOWN8	BIT(21)
+#define ANLT_ANSTAT_PORT_TYPE_UNKNOWN9	BIT(22)
 
-#define MAC_CMDCFG_TX_ENA_GET(v)				GET_BIT_VALUE(v, 0)
-#define MAC_CMDCFG_RX_ENA_GET(v)				GET_BIT_VALUE(v, 1)
-#define MAC_CMDCFG_XON_GEN_GET(v)				GET_BIT_VALUE(v, 2)
-#define MAC_CMDCFG_ETH_SPEED_GET(v)				GET_BIT_VALUE(v, 3)
-#define MAC_CMDCFG_PROMIS_EN_GET(v)				GET_BIT_VALUE(v, 4)
-#define MAC_CMDCFG_PAD_EN_GET(v)				GET_BIT_VALUE(v, 5)
-#define MAC_CMDCFG_CRC_FWD_GET(v)				GET_BIT_VALUE(v, 6)
-#define MAC_CMDCFG_PAUSE_FWD_GET(v)				GET_BIT_VALUE(v, 7)
-#define MAC_CMDCFG_PAUSE_IGNORE_GET(v)			GET_BIT_VALUE(v, 8)
-#define MAC_CMDCFG_TX_ADDR_INS_GET(v)			GET_BIT_VALUE(v, 9)
-#define MAC_CMDCFG_HD_ENA_GET(v)				GET_BIT_VALUE(v, 10)
-#define MAC_CMDCFG_EXCESS_COL_GET(v)			GET_BIT_VALUE(v, 11)
-#define MAC_CMDCFG_LATE_COL_GET(v)				GET_BIT_VALUE(v, 12)
-#define MAC_CMDCFG_SW_RESET_GET(v)				GET_BIT_VALUE(v, 13)
-#define MAC_CMDCFG_MHASH_SEL_GET(v)				GET_BIT_VALUE(v, 14)
-#define MAC_CMDCFG_LOOP_ENA_GET(v)				GET_BIT_VALUE(v, 15)
-#define MAC_CMDCFG_TX_ADDR_SEL_GET(v)			(((v) >> 16) & 0x7)
-#define MAC_CMDCFG_MAGIC_ENA_GET(v)				GET_BIT_VALUE(v, 19)
-#define MAC_CMDCFG_SLEEP_GET(v)					GET_BIT_VALUE(v, 20)
-#define MAC_CMDCFG_WAKEUP_GET(v)				GET_BIT_VALUE(v, 21)
-#define MAC_CMDCFG_XOFF_GEN_GET(v)				GET_BIT_VALUE(v, 22)
-#define MAC_CMDCFG_CNTL_FRM_ENA_GET(v)			GET_BIT_VALUE(v, 23)
-#define MAC_CMDCFG_NO_LGTH_CHECK_GET(v)			GET_BIT_VALUE(v, 24)
-#define MAC_CMDCFG_ENA_10_GET(v)				GET_BIT_VALUE(v, 25)
-#define MAC_CMDCFG_RX_ERR_DISC_GET(v)			GET_BIT_VALUE(v, 26)
-#define MAC_CMDCFG_DISABLE_READ_TIMEOUT_GET(v)	GET_BIT_VALUE(v, 27)
-#define MAC_CMDCFG_CNT_RESET_GET(v)				GET_BIT_VALUE(v, 31)
-*/
-/* SGMII PCS register addresses
+#define ANLT_LTSTAT1_TRAINED_LN0		BIT(0)
+#define ANLT_LTSTAT1_FRAME_LOCK_LN0		BIT(1)
+#define ANLT_LTSTAT1_STARTUP_LN0		BIT(2)
+#define ANLT_LTSTAT1_FAILURE_LN0		BIT(3)
+#define ANLT_LTSTAT1_TRAINED_LN1		BIT(8)
+#define ANLT_LTSTAT1_FRAME_LOCK_LN1		BIT(9)
+#define ANLT_LTSTAT1_STARTUP_LN1		BIT(10)
+#define ANLT_LTSTAT1_FAILURE_LN1		BIT(11)
+#define ANLT_LTSTAT1_TRAINED_LN2		BIT(16)
+#define ANLT_LTSTAT1_FRAME_LOCK_LN2		BIT(17)
+#define ANLT_LTSTAT1_STARTUP_LN2		BIT(18)
+#define ANLT_LTSTAT1_FAILURE_LN2		BIT(19)
+#define ANLT_LTSTAT1_TRAINED_LN3		BIT(24)
+#define ANLT_LTSTAT1_FRAME_LOCK_LN3		BIT(25)
+#define ANLT_LTSTAT1_STARTUP_LN3		BIT(26)
+#define ANLT_LTSTAT1_FAILURE_LN3		BIT(27)
 
-#define SGMII_PCS_SCRATCH			0x10
-#define SGMII_PCS_REV				0x11
-#define SGMII_PCS_LINK_TIMER_0		0x12
-#define SGMII_PCS_LINK_TIMER_1		0x13
-#define SGMII_PCS_IF_MODE			0x14
-#define SGMII_PCS_DIS_READ_TO		0x15
-#define SGMII_PCS_READ_TO			0x16
-#define SGMII_PCS_SW_RESET_TIMEOUT 	100 
-*/
 
 #define PHY_TX_PCS_READY		BIT(0)
 
@@ -140,8 +118,51 @@
 
 struct altera_s10_100ghip_ethreconfig {
 
+	u32 padding[176];
+
 	/* Auto-negotiation and link training registers are currently disabled */
-	u32 anlt_padding[768];
+	u32 anlt_sequencer_config;
+	u32 anlt_sequencer_status;
+	u32 anlt_unused1[14];
+	u32 anlt_an_config1;
+	u32 anlt_an_config2;
+	u32 anlt_an_status;
+	u32 anlt_an_config3;
+	u32 anlt_an_config4;
+	u32 anlt_an_config5;
+	u32 anlt_an_config6;
+	u32 anlt_an_status1;
+	u32 anlt_an_status2;
+	u32 anlt_an_status3;
+	u32 anlt_an_status4;
+	u32 anlt_an_status5;
+	u32 anlt_an_unused2;
+	u32 anlt_an_next_page_override;
+	u32 anlt_an_next_page_lp_status;
+	u32 anlt_unused3;
+	u32 anlt_lt_config1;
+	u32 anlt_lt_config2;
+	u32 anlt_lt_status1;
+	u32 anlt_lt_config_lane0;
+	u32 anlt_lt_frame_contents_lane0;
+	u32 anlt_xcvr_tx_eq1_lane0;
+	u32 anlt_xcvr_tx_eq2_lane0;
+	u32 anlt_lt_param;
+	u32 anlt_unused[8];
+	u32 anlt_lt_config_lane1;
+	u32 anlt_lt_frame_contents_lane1;
+	u32 anlt_xcvr_tx_eq1_lane1;
+	u32 anlt_xcvr_tx_eq2_lane1;
+	u32 anlt_lt_config_lane2;
+	u32 anlt_lt_frame_contents_lane2;
+	u32 anlt_xcvr_tx_eq1_lane2;
+	u32 anlt_xcvr_tx_eq2_lane2;
+	u32 anlt_lt_config_lane3;
+	u32 anlt_lt_frame_contents_lane3;
+	u32 anlt_xcvr_tx_eq1_lane3;
+	u32 anlt_xcvr_tx_eq2_lane3;
+
+	u32 anlt_padding[532];
 
 	/* PHY registers begin at offset 0x300 double words */
 	u32 phy_revision_id;
