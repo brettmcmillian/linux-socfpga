@@ -630,7 +630,9 @@ static int s10_100ghip_get_link_ksettings(struct net_device *dev,
 										  struct ethtool_link_ksettings *link_ksettings)
 {
 	ethtool_link_ksettings_zero_link_mode(link_ksettings, supported);
+	ethtool_link_ksettings_add_link_mode(link_ksettings, supported, FIBRE);
 	ethtool_link_ksettings_add_link_mode(link_ksettings, supported, 100000baseSR4_Full);
+	ethtool_link_ksettings_add_link_mode(link_ksettings, advertising, FIBRE);
 	ethtool_link_ksettings_add_link_mode(link_ksettings, advertising, 100000baseSR4_Full);
 
 	link_ksettings->base.port 			= PORT_FIBRE;
