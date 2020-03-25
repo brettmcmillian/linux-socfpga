@@ -436,6 +436,8 @@ static irqreturn_t altera_isr(int irq, void *dev_id)
 	struct net_device *dev = dev_id;
 	struct altera_s10_100ghip_private *priv;
 
+	printk("altera_s10_100ghip: IRQ received");
+
 	if (unlikely(!dev)) {
 		pr_err("%s: invalid dev pointer\n", __func__);
 		return IRQ_NONE;
@@ -476,8 +478,6 @@ static int s10_100ghip_start_xmit(struct sk_buff *skb, struct net_device *dev)
 	unsigned int nopaged_len = skb_headlen(skb);
 	enum netdev_tx ret = NETDEV_TX_OK;
 	dma_addr_t dma_addr;
-
-	printk("altera_s10_100ghip: Transmitting a packet\n");
 
 	spin_lock_bh(&priv->tx_lock);
 
@@ -525,8 +525,6 @@ static int s10_100ghip_start_xmit(struct sk_buff *skb, struct net_device *dev)
 
 out:
 	spin_unlock_bh(&priv->tx_lock);
-
-	printk("altera_s10_100ghip: Transmitted the packet\n");
 
 	return ret;
 }
