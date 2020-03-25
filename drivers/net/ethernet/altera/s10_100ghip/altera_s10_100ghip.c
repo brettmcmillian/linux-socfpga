@@ -1405,7 +1405,7 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 	priv->revision = readl(&priv->eth_reconfig->phy_revision_id);
 
 	if (netif_msg_probe(priv))
-		dev_info(&pdev->dev, "Intel 100G MAC+PCS version %d.%d at 0x%08lx irq %d/%d\n",
+		dev_info(&pdev->dev, "Intel 100G MAC+PCS version %d.%d at 0x%08lx irq 0x%08x/0x%08x\n",
 			 (priv->revision >> 8) & 0xff,
 			 priv->revision & 0xff,
 			 (unsigned long) eth_reconfig->start, priv->rx_irq,
