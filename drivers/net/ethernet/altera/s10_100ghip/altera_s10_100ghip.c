@@ -393,6 +393,8 @@ static int s10_100ghip_tx_complete(struct altera_s10_100ghip_private *priv)
 	}
 
 	spin_unlock(&priv->tx_lock);
+
+	printk("altera_s10_100ghip: Transmit completed\n");
 	return txcomplete;
 }
 
@@ -475,6 +477,8 @@ static int s10_100ghip_start_xmit(struct sk_buff *skb, struct net_device *dev)
 	enum netdev_tx ret = NETDEV_TX_OK;
 	dma_addr_t dma_addr;
 
+	printk("altera_s10_100ghip: Transmitting a packet\n");
+
 	spin_lock_bh(&priv->tx_lock);
 
 	if (unlikely(s10_100ghip_tx_avail(priv) < nfrags + 1)) {
@@ -521,6 +525,8 @@ static int s10_100ghip_start_xmit(struct sk_buff *skb, struct net_device *dev)
 
 out:
 	spin_unlock_bh(&priv->tx_lock);
+
+	printk("altera_s10_100ghip: Transmitted the packet\n");
 
 	return ret;
 }
