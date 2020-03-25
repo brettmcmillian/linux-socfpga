@@ -134,13 +134,10 @@ static void s10_100ghip_fill_stats(struct net_device *dev, struct ethtool_stats 
 	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
 	u64 ext;
 
-/*	ext = (u64) csrrd32(priv->eth_reconfig,
+	ext = (u64) csrrd32(priv->eth_reconfig,
 			 s10_100ghip_ethreconfigoffs(txstat_frames_lessthan_64B_w_crcerr_high)) << 32;
 	ext |= csrrd32(priv->eth_reconfig,
 			 s10_100ghip_ethreconfigoffs(txstat_frames_lessthan_64B_w_crcerr_low));
-*/
-	ext = (u64) readl(&priv->eth_reconfig->txstat_frames_lessthan_64B_w_crcerr_high) << 32;
-	ext |= readl(&priv->eth_reconfig->txstat_frames_lessthan_64B_w_crcerr_low);
 	buf[0] = ext;
 
 	ext = (u64) csrrd32(priv->eth_reconfig,
