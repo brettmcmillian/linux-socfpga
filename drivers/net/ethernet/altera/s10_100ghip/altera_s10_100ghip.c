@@ -282,8 +282,6 @@ static int s10_100ghip_rx(struct altera_s10_100ghip_private *priv, int limit)
 	u16 pktlength;
 	u16 pktstatus;
 
-	printk("altera_s10_100ghip: Receive a packet.\n");
-
 	/* Check for count < limit first as get_rx_status is changing
 	* the response-fifo so we must process the next packet
 	* after calling get_rx_status if a response is pending.
@@ -394,7 +392,6 @@ static int s10_100ghip_tx_complete(struct altera_s10_100ghip_private *priv)
 
 	spin_unlock(&priv->tx_lock);
 
-	printk("altera_s10_100ghip: Transmit completed\n");
 	return txcomplete;
 }
 
@@ -435,8 +432,6 @@ static irqreturn_t altera_isr(int irq, void *dev_id)
 {
 	struct net_device *dev = dev_id;
 	struct altera_s10_100ghip_private *priv;
-
-	printk("altera_s10_100ghip: IRQ received");
 
 	if (unlikely(!dev)) {
 		pr_err("%s: invalid dev pointer\n", __func__);
