@@ -451,6 +451,10 @@ struct altera_s10_100ghip_xcvrreconfig {
 /* Reset registers */
 #define ALTERA_S10_100GHIP_PHY_EIO_SYS_RST			BIT(0)
 
+/* RX PCS Status for AN/LT */
+#define ALTERA_S10_100GHPI_PHY_RX_ALIGNED			BIT(0)
+#define ALTERA_S10_100GHPI_PHY_HI_BER				BIT(1)
+
 /* Transmit and Receive Command Registers Bit Definitions
  */
 #define ALTERA_S10_100GHIP_TX_CMD_STAT_OMIT_CRC		BIT(17)

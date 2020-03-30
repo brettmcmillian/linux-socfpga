@@ -266,19 +266,81 @@ static void altera_s10_100ghip_phy_regdump(struct altera_s10_100ghip_private *pr
 {
 	u32 reg;
 
-    /* Check to see if the PHY TX datapath is ready */
+	/* Offset:0x300 */
+    reg = readl(&priv->eth_reconfig->phy_revision_id);
+	printk("altera_s10_100ghip: PHY Revision ID = %08x\n", reg);
+
+	/* Offset:0x310 */
+    reg = readl(&priv->eth_reconfig->phy_config);
+	printk("altera_s10_100ghip: PHY Configuration = %08x\n", reg);
+
+	/* Offset:0x313 */
+    reg = readl(&priv->eth_reconfig->phy_pma_serial_loopback);
+	printk("altera_s10_100ghip: PHY PMA Serial Loopback = %08x\n", reg);
+
+	/* Offset:0x320 */
+    reg = readl(&priv->eth_reconfig->phy_tx_pll_locked);
+	printk("altera_s10_100ghip: PHY TX PLL Locked = %08x\n", reg);
+
+	/* Offset:0x321 */
+    reg = readl(&priv->eth_reconfig->phy_rx_cdr_pll_locked);
+	printk("altera_s10_100ghip: PHY RX CDR PLL Locked = %08x\n", reg);
+
+	/* Offset:0x322 */
 	reg = readl(&priv->eth_reconfig->phy_tx_datapath_ready);
 	reg &= PHY_TX_PCS_READY;
 	if (reg == 0x1)
 		printk("altera_s10_100ghip: TX Datapath is ready\n");
 	else
 		printk("altera_s10_100ghip: TX Datapath is not ready\n");
-}
 
-static void altera_s10_100ghip_phy_regdump(struct altera_s10_100ghip_private *priv)
-{
-	u32 reg;
+	/* Offset:0x323 */
+    reg = readl(&priv->eth_reconfig->phy_frame_errors_detected);
+	printk("altera_s10_100ghip: PHY Frame Errors Detected = %08x\n", reg);
 
+	/* Offset:0x325 */
+    reg = readl(&priv->eth_reconfig->phy_reset);
+	printk("altera_s10_100ghip: PHY Reset = %08x\n", reg);
+
+	/* Offset:0x326 */
+    reg = readl(&priv->eth_reconfig->phy_rx_pcs_status_for_anlt);
+	reg &= ALTERA_S10_100GHIP_PHY_HI_BER;
+	if (reg == 0x1)
+		printk("altera_s10_100ghip: RX PCS in Hi-BER statex\n", reg);
+	reg = readl(&priv->eth_reconfig->phy_rx_pcs_status_for_anlt);
+	reg &= ALTERA_S10_100GHIP_PHY_RX_ALIGNED;
+	if (reg == 0x1)
+		printk("altera_s10_100ghip: RX PCS is fully aligned\n", reg);
+	else
+		printk("altera_s10_100ghip: RX PCS is NOT fully aligned\n", reg);
+
+	/* Offset:0x327 */
+    reg = readl(&priv->eth_reconfig->phy_pcs_error_injection);
+	printk("altera_s10_100ghip: PHY PCS Error Injection = %08x\n", reg);
+
+	/* Offset:0x328 */
+    reg = readl(&priv->eth_reconfig->phy_alignment_marker_lock);
+	reg &= ALTERA_S10_100GHIP_PHY_AM_LOCK;
+	if (reg == 0x1)
+		printk("altera_s10_100ghip: PHY RX PCS alignment marker locked\n", reg);
+	else
+		printk("altera_s10_100ghip: PHY RX PCS alignment marker NOT locked\n", reg);
+
+	/* Offset:0x32A */
+    reg = readl(&priv->eth_reconfig->phy_ber_count);
+	printk("altera_s10_100ghip: PHY BER Count = %08x\n", reg);
+
+	/* Offset:0x32A */
+    reg = readl(&priv->eth_reconfig->phy_ber_count);
+	printk("altera_s10_100ghip: PHY BER Count = %08x\n", reg);
+
+	/* Offset:0x333 */
+    reg = readl(&priv->eth_reconfig->phy_recovered_clock_freq);
+	printk("altera_s10_100ghip: PHY RX recovered clock frequency = %08x KHz (/100)\n", reg);
+	
+	/* Offset:0x341 */
+    reg = readl(&priv->eth_reconfig->phy_tx_clock_freq);
+	printk("altera_s10_100ghip: PHY TX clock frequency = %08x KHz (/100)\n", reg);
 }
 
 static void altera_s10_100ghip_txmac_regdump(struct altera_s10_100ghip_private *priv)
