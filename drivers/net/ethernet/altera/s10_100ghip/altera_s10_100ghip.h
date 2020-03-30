@@ -110,14 +110,14 @@
 #define ANLT_LTSTAT1_FAILURE_LN3		BIT(27)
 
 /* Reset registers */
-#define ALTERA_S10_100GHIP_PHY_EIO_SYS_RST			BIT(0)
+#define PHY_EIO_SYS_RST			BIT(0)
 
 /* RX PCS Status for AN/LT */
-#define ALTERA_S10_100GHIP_PHY_RX_ALIGNED			BIT(0)
-#define ALTERA_S10_100GHIP_PHY_HI_BER				BIT(1)
+#define PHY_RX_ALIGNED			BIT(0)
+#define PHY_HI_BER				BIT(1)
 
 /* PCS Alignment Marker Lock */
-#define ALTERA_S10_100GHIP_PHY_AM_LOCK				BIT(0)
+#define PHY_AM_LOCK				BIT(0)
 
 /* Transmit and Receive Command Registers Bit Definitions
  */

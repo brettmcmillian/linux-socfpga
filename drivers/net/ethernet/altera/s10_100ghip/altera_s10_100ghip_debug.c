@@ -306,13 +306,13 @@ static void altera_s10_100ghip_phy_regdump(struct altera_s10_100ghip_private *pr
     reg = readl(&priv->eth_reconfig->phy_rx_pcs_status_for_anlt);
 	reg &= PHY_HI_BER;
 	if (reg == 0x1)
-		printk("altera_s10_100ghip: RX PCS in Hi-BER statex\n", reg);
+		printk("altera_s10_100ghip: RX PCS in Hi-BER state\n");
 	reg = readl(&priv->eth_reconfig->phy_rx_pcs_status_for_anlt);
 	reg &= PHY_RX_ALIGNED;
 	if (reg == 0x1)
-		printk("altera_s10_100ghip: RX PCS is fully aligned\n", reg);
+		printk("altera_s10_100ghip: RX PCS is fully aligned\n");
 	else
-		printk("altera_s10_100ghip: RX PCS is NOT fully aligned\n", reg);
+		printk("altera_s10_100ghip: RX PCS is NOT fully aligned\n");
 
 	/* Offset:0x327 */
     reg = readl(&priv->eth_reconfig->phy_pcs_error_injection);
@@ -322,9 +322,9 @@ static void altera_s10_100ghip_phy_regdump(struct altera_s10_100ghip_private *pr
     reg = readl(&priv->eth_reconfig->phy_alignment_marker_lock);
 	reg &= PHY_AM_LOCK;
 	if (reg == 0x1)
-		printk("altera_s10_100ghip: PHY RX PCS alignment marker locked\n", reg);
+		printk("altera_s10_100ghip: PHY RX PCS alignment marker locked\n");
 	else
-		printk("altera_s10_100ghip: PHY RX PCS alignment marker NOT locked\n", reg);
+		printk("altera_s10_100ghip: PHY RX PCS alignment marker NOT locked\n");
 
 	/* Offset:0x32A */
     reg = readl(&priv->eth_reconfig->phy_ber_count);
@@ -367,13 +367,10 @@ void altera_s10_100ghip_regdump(struct altera_s10_100ghip_private *priv)
     altera_s10_100ghip_phy_regdump(priv);
     altera_s10_100ghip_txmac_regdump(priv);
     altera_s10_100ghip_rxmac_regdump(priv);
-
-    return 0;
 }
 
 static int altera_s10_100ghip_xcvr_regdump(struct altera_s10_100ghip_private *priv)
 {
-	int i;
 	u32 reg;
 
 	reg = readl(priv->sysid);
