@@ -109,6 +109,27 @@
 #define ANLT_LTSTAT1_STARTUP_LN3		BIT(26)
 #define ANLT_LTSTAT1_FAILURE_LN3		BIT(27)
 
+/* Reset registers */
+#define ALTERA_S10_100GHIP_PHY_EIO_SYS_RST			BIT(0)
+
+/* RX PCS Status for AN/LT */
+#define ALTERA_S10_100GHIP_PHY_RX_ALIGNED			BIT(0)
+#define ALTERA_S10_100GHIP_PHY_HI_BER				BIT(1)
+
+/* PCS Alignment Marker Lock */
+#define ALTERA_S10_100GHIP_PHY_AM_LOCK				BIT(0)
+
+/* Transmit and Receive Command Registers Bit Definitions
+ */
+#define ALTERA_S10_100GHIP_TX_CMD_STAT_OMIT_CRC		BIT(17)
+#define ALTERA_S10_100GHIP_TX_CMD_STAT_TX_SHIFT16	BIT(18)
+#define ALTERA_S10_100GHIP_RX_CMD_STAT_RX_SHIFT16	BIT(25)
+
+#define ALTERA_S10_100GHIP_TX_PCS_READY				GET_BIT_VALUE(v, 0)
+
+#define S10_100GHIP_TX_PLL_NOT_LOCKED -1
+#define S10_100GHIP_RX_CDR_PLL_NOT_LOCKED -2
+#define S10_100GHIP_TX_DATAPATH_NOT_READY -3
 
 #define PHY_TX_PCS_READY		BIT(0)
 
@@ -447,25 +468,6 @@ struct altera_s10_100ghip_xcvrreconfig {
 
 #define s10_100ghip_ethreconfigoffs(a) (offsetof(struct altera_s10_100ghip_ethreconfig, a))
 #define s10_100ghip_xcvrreconfigoffs(a) (offsetof(struct altera_s10_100ghip_xcvrreconfig, a))
-
-/* Reset registers */
-#define ALTERA_S10_100GHIP_PHY_EIO_SYS_RST			BIT(0)
-
-/* RX PCS Status for AN/LT */
-#define ALTERA_S10_100GHPI_PHY_RX_ALIGNED			BIT(0)
-#define ALTERA_S10_100GHPI_PHY_HI_BER				BIT(1)
-
-/* Transmit and Receive Command Registers Bit Definitions
- */
-#define ALTERA_S10_100GHIP_TX_CMD_STAT_OMIT_CRC		BIT(17)
-#define ALTERA_S10_100GHIP_TX_CMD_STAT_TX_SHIFT16	BIT(18)
-#define ALTERA_S10_100GHIP_RX_CMD_STAT_RX_SHIFT16	BIT(25)
-
-#define ALTERA_S10_100GHIP_TX_PCS_READY				GET_BIT_VALUE(v, 0)
-
-#define S10_100GHIP_TX_PLL_NOT_LOCKED -1
-#define S10_100GHIP_RX_CDR_PLL_NOT_LOCKED -2
-#define S10_100GHIP_TX_DATAPATH_NOT_READY -3
 
 /* Wrapper around a pointer to a socket buffer,
  * so a DMA handle can be stored along with the buffer

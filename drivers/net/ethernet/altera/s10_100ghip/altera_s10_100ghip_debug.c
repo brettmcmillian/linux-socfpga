@@ -304,11 +304,11 @@ static void altera_s10_100ghip_phy_regdump(struct altera_s10_100ghip_private *pr
 
 	/* Offset:0x326 */
     reg = readl(&priv->eth_reconfig->phy_rx_pcs_status_for_anlt);
-	reg &= ALTERA_S10_100GHIP_PHY_HI_BER;
+	reg &= PHY_HI_BER;
 	if (reg == 0x1)
 		printk("altera_s10_100ghip: RX PCS in Hi-BER statex\n", reg);
 	reg = readl(&priv->eth_reconfig->phy_rx_pcs_status_for_anlt);
-	reg &= ALTERA_S10_100GHIP_PHY_RX_ALIGNED;
+	reg &= PHY_RX_ALIGNED;
 	if (reg == 0x1)
 		printk("altera_s10_100ghip: RX PCS is fully aligned\n", reg);
 	else
@@ -320,7 +320,7 @@ static void altera_s10_100ghip_phy_regdump(struct altera_s10_100ghip_private *pr
 
 	/* Offset:0x328 */
     reg = readl(&priv->eth_reconfig->phy_alignment_marker_lock);
-	reg &= ALTERA_S10_100GHIP_PHY_AM_LOCK;
+	reg &= PHY_AM_LOCK;
 	if (reg == 0x1)
 		printk("altera_s10_100ghip: PHY RX PCS alignment marker locked\n", reg);
 	else
