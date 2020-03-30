@@ -567,7 +567,7 @@ static void altera_s10_100ghip_validate(struct net_device *dev, unsigned long *s
 static void altera_s10_100ghip_mac_config(struct net_device *dev, unsigned int mode,
 										 const struct phylink_link_state *state)
 {
-	return 0;
+
 }
 
 static int altera_s10_100ghip_link_state(struct net_device *dev, struct phylink_link_state *state)
@@ -752,7 +752,7 @@ static int init_100ghip_pcs(struct net_device *dev)
 
 static int s10_100ghip_do_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
 {
-	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+/*	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
 
 	switch (cmd) {
 		case SIOREGDUMP:
@@ -761,6 +761,8 @@ static int s10_100ghip_do_ioctl(struct net_device *dev, struct ifreq *ifr, int c
 		default:
 			return -EOPNOTSUPP;
 	}
+*/
+	return 0;
 }
 
 /* Open and initialize the interface
