@@ -330,10 +330,6 @@ static void altera_s10_100ghip_phy_regdump(struct altera_s10_100ghip_private *pr
     reg = readl(&priv->eth_reconfig->phy_ber_count);
 	printk("altera_s10_100ghip: PHY BER Count = %08x\n", reg);
 
-	/* Offset:0x32A */
-    reg = readl(&priv->eth_reconfig->phy_ber_count);
-	printk("altera_s10_100ghip: PHY BER Count = %08x\n", reg);
-
 	/* Offset:0x333 */
     reg = readl(&priv->eth_reconfig->phy_recovered_clock_freq);
 	printk("altera_s10_100ghip: PHY RX recovered clock frequency = %08x KHz (/100)\n", reg);

@@ -110,7 +110,9 @@
 #define ANLT_LTSTAT1_FAILURE_LN3		BIT(27)
 
 /* Reset registers */
-#define PHY_EIO_SYS_RST			BIT(0)
+#define PHY_EIO_SYS_RST			0x1
+#define PHY_SOFT_TX_RST			0x2
+#define PHY_SOFT_RX_RST			0x4
 
 /* RX PCS Status for AN/LT */
 #define PHY_RX_ALIGNED			BIT(0)
