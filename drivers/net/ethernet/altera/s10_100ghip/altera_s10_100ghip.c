@@ -619,11 +619,11 @@ static int init_phy(struct net_device *dev)
 	u32 reg;
 	int ret;
 
-	/* Issue a Ethernet I/O System Reset to the HIP core */
-	reg = readl(&priv->eth_reconfig->phy_config);
+	/* Issue a Soft RX Reset to the HIP core */
+/*	reg = readl(&priv->eth_reconfig->phy_config);
 	reg &= PHY_SOFT_RX_RST;
 	writel(reg, &priv->eth_reconfig->phy_config);
-
+*/
 	priv->phy_iface = PHY_INTERFACE_MODE_NA;
 	priv->phy_name = "internal PHY";
 	priv->oldlink = 0;
