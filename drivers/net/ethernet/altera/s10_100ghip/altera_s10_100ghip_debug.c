@@ -359,7 +359,7 @@ void altera_s10_100ghip_regdump(struct altera_s10_100ghip_private *priv)
 
     /* Enable the first line only when ANLT is turned on in the HIP */
     /* ANLT only supports backplane Ethernet, so we disable it. */
-    /* altera_s10_100ghip_anlt_regdump(priv); */
+    altera_s10_100ghip_anlt_regdump(priv);
     altera_s10_100ghip_phy_regdump(priv);
     altera_s10_100ghip_txmac_regdump(priv);
     altera_s10_100ghip_rxmac_regdump(priv);
