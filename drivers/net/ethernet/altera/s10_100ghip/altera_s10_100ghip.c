@@ -624,6 +624,11 @@ static int init_phy(struct net_device *dev)
 	reg &= PHY_SOFT_RX_RST;
 	writel(reg, &priv->eth_reconfig->phy_config);
 */
+
+	reg = readl(&priv->eth_reconfig->anlt_sequencer_config);
+    reg &= ~ANLT_SEQ_AN_TIMEOUT;
+	writel(reg, &priv->eth_reconfig->anlt_sequencer_config);
+
 	priv->phy_iface = PHY_INTERFACE_MODE_NA;
 	priv->phy_name = "internal PHY";
 	priv->oldlink = 0;
