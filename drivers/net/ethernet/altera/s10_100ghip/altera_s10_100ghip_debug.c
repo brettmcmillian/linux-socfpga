@@ -342,12 +342,47 @@ static void altera_s10_100ghip_phy_regdump(struct altera_s10_100ghip_private *pr
 static void altera_s10_100ghip_txmac_regdump(struct altera_s10_100ghip_private *priv)
 {
 	u32 reg;
+
+	reg = readl(&priv->eth_reconfig->txmac_link_fault_config);
+	printk("altera_s10_100ghip: TX MAC Link Fault Config = 0x%08x\n", reg);
+
+	reg = readl(&priv->eth_reconfig->txmac_ipg_words);
+	printk("altera_s10_100ghip: TX MAC IPG Words to remove = 0x%08x\n", reg);
+
+	reg = readl(&priv->eth_reconfig->txmac_max_tx_frame_size);
+	printk("altera_s10_100ghip: TX MAC Max Frame Size = 0x%08x\n", reg);
+
+	reg = readl(&priv->eth_reconfig->txmac_config);
+	printk("altera_s10_100ghip: TX MAC Configuration = 0x%08x\n", reg);
+
+	reg = readl(&priv->eth_reconfig->txmac_ehip_feature_config);
+	printk("altera_s10_100ghip: TX MAC eHIP Feature Configuration = 0x%08x\n", reg);
+
+	reg = readl(&priv->eth_reconfig->txmac_src_address_low);
+	printk("altera_s10_100ghip: TX MAC Address Low = 0x%08x\n", reg);
+
+	reg = readl(&priv->eth_reconfig->txmac_src_address_high);
+	printk("altera_s10_100ghip: TX MAC Address High = 0x%08x\n", reg);
 }
 
 static void altera_s10_100ghip_rxmac_regdump(struct altera_s10_100ghip_private *priv)
 {
 	u32 reg;
 
+	reg = readl(&priv->eth_reconfig->rxmac_max_rx_frame_size);
+	printk("altera_s10_100ghip: RX MAC Max Frame Size = 0x%08x\n", reg);
+
+	reg = readl(&priv->eth_reconfig->rxmac_rx_crc_forwarding);
+	printk("altera_s10_100ghip: RX MAC CRC Forwarding = 0x%08x\n", reg);
+
+	reg = readl(&priv->eth_reconfig->rxmac_link_fault_status);
+	printk("altera_s10_100ghip: RX MAC Link Fault Status = 0x%08x\n", reg);
+
+	reg = readl(&priv->eth_reconfig->rxmac_config);
+	printk("altera_s10_100ghip: RX MAC Configuration = 0x%08x\n", reg);
+
+	reg = readl(&priv->eth_reconfig->rxmac_ehip_feature_config);
+	printk("altera_s10_100ghip: RX MAC eHIP Feature Configuration = 0x%08x\n", reg);
 }
 
 void altera_s10_100ghip_regdump(struct altera_s10_100ghip_private *priv)

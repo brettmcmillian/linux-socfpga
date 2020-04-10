@@ -724,7 +724,7 @@ static int init_mac(struct altera_s10_100ghip_private *priv)
 /*	Let the MAC come up in the default state and update the MAC address.
 */
 
-	s10_100ghip_update_mac_addr(priv, priv->dev->dev_addr);
+/*	s10_100ghip_update_mac_addr(priv, priv->dev->dev_addr);*/
 
 	return 0;
 }
@@ -733,7 +733,7 @@ static int init_mac(struct altera_s10_100ghip_private *priv)
  */
 static void s10_100ghip_set_mac(struct altera_s10_100ghip_private *priv, bool enable)
 {
-	u32 value = csrrd32(priv->eth_reconfig, s10_100ghip_ethreconfigoffs(txmac_config));
+/*	u32 value = csrrd32(priv->eth_reconfig, s10_100ghip_ethreconfigoffs(txmac_config));
 
 	if (enable)
 		value &= ~TX_MAC_DISABLE_TX_MAC;
@@ -741,6 +741,16 @@ static void s10_100ghip_set_mac(struct altera_s10_100ghip_private *priv, bool en
 		value |= TX_MAC_DISABLE_TX_MAC;
 
 	csrwr32(value, priv->eth_reconfig, s10_100ghip_ethreconfigoffs(txmac_config));
+*/
+	u32 reg;
+	reg = readl(&priv->eth_reconfig->txmac_config);
+
+	if (enable)
+		reg &= ~TX_MAC_DISABLE_TX_MAC;
+	else
+		reg |= TX_MAC_DISABLE_TX_MAC;
+
+	writel(value, &priv->eth_reconfig->txmac_config);
 }
 
 /* Change the MTU
