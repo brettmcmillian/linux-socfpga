@@ -628,6 +628,7 @@ static int init_phy(struct net_device *dev)
 			tx_ready = 1;
 		}
 
+		/* Then check for rx_pcs_ready */
 		reg = readl(&priv->eth_reconfig->phy_rx_pcs_status_for_anlt);
 		reg &= PHY_RX_ALIGNED;
 		if (reg == 0x1) {
@@ -635,6 +636,7 @@ static int init_phy(struct net_device *dev)
 		}
 
 		if ((tx_ready != 1) && (rx_ready != 1)) {
+			printk("altera_s10_100ghip: Resetting the 100G HIP core.\n");
 			if (retries == 4) {
 				printk("altera_s10_100ghip: Failed to bring up the interace.\n");
 				return -1;
@@ -645,6 +647,7 @@ static int init_phy(struct net_device *dev)
 			udelay(1);
 			writel(~PHY_EIO_SYS_RST, &priv->eth_reconfig->phy_config);
 			udelay(100);
+			altera_s10_100ghip_regdump(priv);
 		} else {
 			printk("altera_s10_100ghip: Interace is ready for link up.\n");
 			break;
