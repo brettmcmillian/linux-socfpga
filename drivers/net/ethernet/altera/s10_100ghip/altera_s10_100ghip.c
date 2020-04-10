@@ -645,7 +645,7 @@ static int init_phy(struct net_device *dev)
 			/* Issue an Ethernet system reset to the HIP core */
 			writel(PHY_EIO_SYS_RST, &priv->eth_reconfig->phy_config);
 			udelay(1);
-			writel(~PHY_EIO_SYS_RST, &priv->eth_reconfig->phy_config);
+			writel(0x0, &priv->eth_reconfig->phy_config);
 			udelay(100);
 			altera_s10_100ghip_regdump(priv);
 		} else {
