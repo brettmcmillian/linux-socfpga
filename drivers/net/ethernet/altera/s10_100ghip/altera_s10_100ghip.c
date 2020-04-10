@@ -596,8 +596,8 @@ static void altera_s10_100ghip_mac_link_up(struct net_device *dev, unsigned int 
 		struct altera_s10_100ghip_private *priv = netdev_priv(dev);
 	u32 reg;
 
-	reg = readl(&priv->eth_reconfig->phy_tx_datapath_ready);
-	reg &= PHY_TX_PCS_READY;
+	reg = readl(&priv->eth_reconfig->phy_rx_pcs_status_for_anlt);
+	reg &= PHY_RX_ALIGNED;
 	if (reg == 0x1)
 		netif_carrier_on(dev);
 	else
@@ -617,13 +617,39 @@ static int init_phy(struct net_device *dev)
 	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
 	struct phylink *phylink;
 	u32 reg;
-	int ret;
+	int retries;
+	int tx_ready = 0, rx_ready = 0;
 
-	/* Issue a Soft RX Reset to the HIP core */
-/*	reg = readl(&priv->eth_reconfig->phy_config);
-	reg &= PHY_SOFT_RX_RST;
-	writel(reg, &priv->eth_reconfig->phy_config);
-*/
+	for (retries=0; retries < 5; retries++) {
+		/* First check for tx_datapath_ready */
+		reg = readl(&priv->eth_reconfig->phy_tx_datapath_ready);
+		reg &= PHY_TX_PCS_READY;
+		if (reg == 0x1) {
+			tx_ready = 1;
+		}
+
+		reg = readl(&priv->eth_reconfig->phy_rx_pcs_status_for_anlt);
+		reg &= PHY_RX_ALIGNED;
+		if (reg == 0x1) {
+			rx_ready = 1;
+		}
+
+		if ((tx_ready != 1) && (rx_ready != 1)) {
+			if (retries == 4) {
+				printk("altera_s10_100ghip: Failed to bring up the interace.\n");
+				return -1;
+			}
+
+			/* Issue an Ethernet system reset to the HIP core */
+			writel(PHY_EIO_SYS_RST, &priv->eth_reconfig->phy_config);
+			udelay(1);
+			writel(~PHY_EIO_SYS_RST, &priv->eth_reconfig->phy_config);
+			udelay(100);
+		} else {
+			printk("altera_s10_100ghip: Interace is ready for link up.\n");
+			break;
+		}
+	}
 
 	reg = readl(&priv->eth_reconfig->anlt_sequencer_config);
     reg &= ~ANLT_SEQ_AN_TIMEOUT;
@@ -1193,7 +1219,8 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 
 	ret = init_phy(ndev);
 	if (ret != 0) {
-		netdev_err(ndev, "Cannot attach to fixed PHY (error: %d)\n", ret);
+		netdev_err(ndev, "Cannot attach to the PHY (error: %d)\n", ret);
+		goto err_free_netdev;
 	}
 
 	return 0;
