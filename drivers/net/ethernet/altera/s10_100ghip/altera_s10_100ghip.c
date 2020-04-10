@@ -750,7 +750,7 @@ static void s10_100ghip_set_mac(struct altera_s10_100ghip_private *priv, bool en
 	else
 		reg |= TX_MAC_DISABLE_TX_MAC;
 
-	writel(value, &priv->eth_reconfig->txmac_config);
+	writel(reg, &priv->eth_reconfig->txmac_config);
 }
 
 /* Change the MTU
@@ -1022,8 +1022,9 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 	struct resource *sysid;
 	struct resource *dma_res;
 	struct altera_s10_100ghip_private *priv;
-	const unsigned char *macaddr;
+	const unsigned char macaddr[6];
 	const struct of_device_id *of_id = NULL;
+	u32 msb, lsb;
 
 	ndev = alloc_etherdev(sizeof(struct altera_s10_100ghip_private));
 	if (!ndev) {
@@ -1171,12 +1172,21 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 	 */
 	priv->rx_dma_buf_sz = ALTERA_RXDMABUFFER_SIZE;
 
+
+	msb = readl(&priv->eth_reconfig->txmac_src_address_low);
+	lsb = readl(&priv->eth_reconfig->txmac_src_address_high);
+
+	macaddr[0] = msb & 0x000000ff;
+	macaddr[1] = (msb >> 8) & 0x000000ff;
+	macaddr[2] = (msb >> 16) & 0x000000ff;
+	macaddr[3] = (msb >> 24) & 0x000000ff;
+	macaddr[4] = lsb & 0x000000ff;
+	macaddr[5] = (lsb >> 8) & 0x000000ff;
+
+	printk("altera_s10_100ghip: MAC Address = %s\n", macaddr);
+
 	/* get default MAC address from device tree */
-	macaddr = of_get_mac_address(pdev->dev.of_node);
-	if (macaddr)
-		ether_addr_copy(ndev->dev_addr, macaddr);
-	else
-		eth_hw_addr_random(ndev);
+	ether_addr_copy(ndev->dev_addr, macaddr);
 
 	/* Check the mSGDMA Component Configuration Registers */
 	s10_msgdma_check(priv);
