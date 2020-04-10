@@ -635,7 +635,7 @@ static int init_phy(struct net_device *dev)
 			rx_ready = 1;
 		}
 
-		if ((tx_ready != 1) && (rx_ready != 1)) {
+		if ((tx_ready != 1) || (rx_ready != 1)) {
 			printk("altera_s10_100ghip: Resetting the 100G HIP core.\n");
 			if (retries == 4) {
 				printk("altera_s10_100ghip: Failed to bring up the interace.\n");
