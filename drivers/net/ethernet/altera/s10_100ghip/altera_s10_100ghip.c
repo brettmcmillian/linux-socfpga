@@ -750,7 +750,7 @@ static void s10_100ghip_set_mac(struct altera_s10_100ghip_private *priv, bool en
 	else
 		reg |= TX_MAC_DISABLE_TX_MAC;
 
-	writel(value, &priv->eth_reconfig->txmac_config);
+	writel(reg, &priv->eth_reconfig->txmac_config);
 }
 
 /* Change the MTU
