@@ -1233,11 +1233,13 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 	ret = init_phy(ndev);
 	if (ret != 0) {
 		netdev_err(ndev, "Cannot attach to the PHY (error: %d)\n", ret);
-		return ret;
+		goto err_init_phy;
 	}
 
 	return 0;
 
+err_init_phy:
+	unregister_netdev(ndev);
 err_register_netdev:
 	netif_napi_del(&priv->napi);
 err_free_netdev:
