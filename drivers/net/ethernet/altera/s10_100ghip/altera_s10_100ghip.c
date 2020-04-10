@@ -691,10 +691,10 @@ static void s10_100ghip_update_mac_addr(struct altera_s10_100ghip_private *priv,
 	lsb = ((addr[5] << 8) | addr[4]) & 0xffff;
 
 	/* Set primary MAC address */
-	writel(msb, priv->eth_reconfig->txmac_src_address_low);
-	writel(lsb, priv->eth_reconfig->txmac_src_address_high);
+	writel(msb, &priv->eth_reconfig->txmac_src_address_low);
+	writel(lsb, &priv->eth_reconfig->txmac_src_address_high);
 
-	writel(dat, priv->eth_reconfig->txmac_config);
+	writel(dat, &priv->eth_reconfig->txmac_config);
 }
 
 /* MAC software reset.
@@ -1233,7 +1233,7 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 	ret = init_phy(ndev);
 	if (ret != 0) {
 		netdev_err(ndev, "Cannot attach to the PHY (error: %d)\n", ret);
-		goto err_free_netdev;
+		return ret;
 	}
 
 	return 0;
