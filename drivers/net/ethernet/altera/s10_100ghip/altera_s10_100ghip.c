@@ -620,6 +620,8 @@ static int init_phy(struct net_device *dev)
 	int retries;
 	int tx_ready = 0, rx_ready = 0;
 
+	altera_s10_100ghip_xcvr_cal_check(priv);
+
 	for (retries=0; retries < 5; retries++) {
 		/* First check for tx_datapath_ready */
 		reg = readl(&priv->eth_reconfig->phy_tx_datapath_ready);

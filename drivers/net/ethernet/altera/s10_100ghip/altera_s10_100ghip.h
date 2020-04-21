@@ -110,9 +110,9 @@
 #define ANLT_LTSTAT1_FAILURE_LN3		BIT(27)
 
 /* Reset registers */
-#define PHY_EIO_SYS_RST			0x1
-#define PHY_SOFT_TX_RST			0x2
-#define PHY_SOFT_RX_RST			0x4
+#define PHY_EIO_SYS_RST			0x00000001
+#define PHY_SOFT_TX_RST			0x00000002
+#define PHY_SOFT_RX_RST			0x00000004
 
 /* TX DATAPATH READY */
 #define PHY_TX_PCS_READY		BIT(0)
@@ -464,10 +464,29 @@ struct altera_s10_100ghip_ethreconfig {
 	u32 rxstat_frames_w_bad_length_type_high;
 };
 
-struct altera_s10_100ghip_xcvrreconfig {
+#define EN_BACKGROUND_CAL		BIT(0)
 
+struct altera_s10_100ghip_xcvrreconfig {
+	u32 padding[104];
+
+	/* Transmitter PMA Logical Register Map */
+	u32 tx_pma_preemphasis1;
+	u32 tx_pma_unused1;
+	u32 tx_pma_preemphasis2;
+	u32 tx_pma_unused2;
+	u32 tx_pma_vod_compensation;
+	u32 tx_pma_unused3[2];
+	u32 tx_pma_slew_rate;
+	u32 tx_pma_padding[13];
+
+	/* Receiver PMA Logical Register Map */
+	u32 rx_pma_map[99];
+
+	u32 cal_padding[963];
+	u32 background_cal;
 };
 
+#define RX_PMA_REG_OFFSET 125
 
 #define s10_100ghip_ethreconfigoffs(a) (offsetof(struct altera_s10_100ghip_ethreconfig, a))
 #define s10_100ghip_xcvrreconfigoffs(a) (offsetof(struct altera_s10_100ghip_xcvrreconfig, a))

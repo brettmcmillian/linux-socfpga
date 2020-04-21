@@ -385,6 +385,46 @@ static void altera_s10_100ghip_rxmac_regdump(struct altera_s10_100ghip_private *
 	printk("altera_s10_100ghip: RX MAC eHIP Feature Configuration = 0x%08x\n", reg);
 }
 
+static void altera_s10_100ghip_xcvr_cal_check(struct altera_s10_100ghip_private *priv)
+{
+	u32 reg;
+
+	reg = readl(&priv->xcvr_reconfig0->background_cal);
+	reg &= EN_BACKGROUND_CAL;
+	if (reg == 0x1)
+		printk("altera_s10_100ghip: Transceiver 0 background calibration is enabled\n");
+	else
+		printk("altera_s10_100ghip: Transceiver 0 background calibration is disabled\n");
+
+	reg = readl(&priv->xcvr_reconfig1->background_cal);
+	reg &= EN_BACKGROUND_CAL;
+	if (reg == 0x1)
+		printk("altera_s10_100ghip: Transceiver 1 background calibration is enabled\n");
+	else
+		printk("altera_s10_100ghip: Transceiver 1 background calibration is disabled\n");
+
+	reg = readl(&priv->xcvr_reconfig2->background_cal);
+	reg &= EN_BACKGROUND_CAL;
+	if (reg == 0x1)
+		printk("altera_s10_100ghip: Transceiver 2 background calibration is enabled\n");
+	else
+		printk("altera_s10_100ghip: Transceiver 2 background calibration is disabled\n");
+
+	reg = readl(&priv->xcvr_reconfig3->background_cal);
+	reg &= EN_BACKGROUND_CAL;
+	if (reg == 0x1)
+		printk("altera_s10_100ghip: Transceiver 3 background calibration is enabled\n");
+	else
+		printk("altera_s10_100ghip: Transceiver 3 background calibration is disabled\n");
+}
+
+static void altera_s10_100ghip_xcvr_regdump(struct altera_s10_100ghip_private *priv)
+{
+	u32 reg;
+
+	/*reg = readl(&priv->xcvr_reconfig0->)*/
+}
+
 void altera_s10_100ghip_regdump(struct altera_s10_100ghip_private *priv)
 {
 	u32 reg;
