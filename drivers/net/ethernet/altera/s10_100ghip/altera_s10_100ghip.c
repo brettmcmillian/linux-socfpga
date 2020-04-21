@@ -601,7 +601,7 @@ static void altera_s10_100ghip_mac_link_up(struct net_device *dev, unsigned int 
 	if (reg == 0x1)
 		netif_carrier_on(dev);
 	else
-		printk("altera_s10_100ghip: TX Datapath is not ready\n");
+		printk("altera_s10_100ghip: RX PCS is not aligned\n");
 }
 
 static const struct phylink_mac_ops altera_s10_100ghip_phylink_ops = {
@@ -624,18 +624,10 @@ static int init_phy(struct net_device *dev)
 		/* First check for tx_datapath_ready */
 		reg = readl(&priv->eth_reconfig->phy_tx_datapath_ready);
 		reg &= PHY_TX_PCS_READY;
-		if (reg == 0x1) {
+		if (reg == 0x1)
 			tx_ready = 1;
-		}
 
-		/* Then check for rx_pcs_ready */
-		reg = readl(&priv->eth_reconfig->phy_rx_pcs_status_for_anlt);
-		reg &= PHY_RX_ALIGNED;
-		if (reg == 0x1) {
-			rx_ready = 1;
-		}
-
-		if ((tx_ready != 1) || (rx_ready != 1)) {
+		if (tx_ready != 1) {
 			printk("altera_s10_100ghip: Resetting the 100G HIP core.\n");
 			if (retries == 4) {
 				printk("altera_s10_100ghip: Failed to bring up the interace.\n");
@@ -646,7 +638,33 @@ static int init_phy(struct net_device *dev)
 			writel(PHY_EIO_SYS_RST, &priv->eth_reconfig->phy_config);
 			udelay(1);
 			writel(0x0, &priv->eth_reconfig->phy_config);
-			udelay(100);
+			udelay(5000);
+			altera_s10_100ghip_regdump(priv);
+		} else {
+			printk("altera_s10_100ghip: Interace is ready for link up.\n");
+			break;
+		}
+	}
+
+	for (retries=0; retries < 5; retries++) {
+		/* Then check for rx_pcs_ready */
+		reg = readl(&priv->eth_reconfig->phy_rx_pcs_status_for_anlt);
+		reg &= PHY_RX_ALIGNED;
+		if (reg == 0x1)
+			rx_ready = 1;
+
+		if (rx_ready != 1) {
+			printk("altera_s10_100ghip: Resetting the 100G HIP receiver.\n");
+			if (retries == 4) {
+				printk("altera_s10_100ghip: Failed to align the receiver.\n");
+				return -2;
+			}
+
+			/* Issue an Ethernet system reset to the HIP core */
+			writel(PHY_SOFT_RX_RST, &priv->eth_reconfig->phy_config);
+			udelay(1);
+			writel(0x0, &priv->eth_reconfig->phy_config);
+			udelay(10000);
 			altera_s10_100ghip_regdump(priv);
 		} else {
 			printk("altera_s10_100ghip: Interace is ready for link up.\n");
@@ -657,6 +675,8 @@ static int init_phy(struct net_device *dev)
 	reg = readl(&priv->eth_reconfig->anlt_sequencer_config);
     reg &= ~ANLT_SEQ_AN_TIMEOUT;
 	writel(reg, &priv->eth_reconfig->anlt_sequencer_config);
+
+	writel(0x1, &priv->eth_reconfig->phy_clear_frame_errors);
 
 	priv->phy_iface = PHY_INTERFACE_MODE_NA;
 	priv->phy_name = "internal PHY";
@@ -1181,9 +1201,6 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 	/* Check the mSGDMA Component Configuration Registers */
 	s10_msgdma_check(priv);
 
-	/* Check to make sure the core is ready */
-    altera_s10_100ghip_regdump(priv);
-
 	/* initialize netdev */
 	ndev->mem_start = eth_reconfig->start;
 	ndev->mem_end = eth_reconfig->end;
@@ -1235,6 +1252,9 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 		netdev_err(ndev, "Cannot attach to the PHY (error: %d)\n", ret);
 		goto err_init_phy;
 	}
+
+	/* Check to make sure the core is ready */
+    altera_s10_100ghip_regdump(priv);
 
 	return 0;
 
