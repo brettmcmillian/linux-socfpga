@@ -623,6 +623,8 @@ void altera_s10_100ghip_set_ethtool_ops(struct net_device *);
 
 void altera_s10_100ghip_regdump(struct altera_s10_100ghip_private *priv);
 
+void altera_s10_100ghip_xcvr_cal_check(struct altera_s10_100ghip_private *priv);
+
 static inline
 u32 csrrd32(void __iomem *mac, size_t offs)
 {

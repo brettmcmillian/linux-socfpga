@@ -385,7 +385,7 @@ static void altera_s10_100ghip_rxmac_regdump(struct altera_s10_100ghip_private *
 	printk("altera_s10_100ghip: RX MAC eHIP Feature Configuration = 0x%08x\n", reg);
 }
 
-static void altera_s10_100ghip_xcvr_cal_check(struct altera_s10_100ghip_private *priv)
+void altera_s10_100ghip_xcvr_cal_check(struct altera_s10_100ghip_private *priv)
 {
 	u32 reg;
 
