@@ -439,13 +439,3 @@ void altera_s10_100ghip_regdump(struct altera_s10_100ghip_private *priv)
     altera_s10_100ghip_txmac_regdump(priv);
     altera_s10_100ghip_rxmac_regdump(priv);
 }
-
-static int altera_s10_100ghip_xcvr_regdump(struct altera_s10_100ghip_private *priv)
-{
-	u32 reg;
-
-	reg = readl(priv->sysid);
-	printk("altera_s10_100ghip: sysid = 0x%08x.\n", reg);
-
-	return 0;
-}
