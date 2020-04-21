@@ -640,8 +640,7 @@ static int init_phy(struct net_device *dev)
 			writel(PHY_EIO_SYS_RST, &priv->eth_reconfig->phy_config);
 			udelay(1);
 			writel(0x0, &priv->eth_reconfig->phy_config);
-			udelay(5000);
-			altera_s10_100ghip_regdump(priv);
+			udelay(10000);
 		} else {
 			printk("altera_s10_100ghip: Interace is ready for link up.\n");
 			break;
@@ -666,8 +665,7 @@ static int init_phy(struct net_device *dev)
 			writel(PHY_SOFT_RX_RST, &priv->eth_reconfig->phy_config);
 			udelay(1);
 			writel(0x0, &priv->eth_reconfig->phy_config);
-			udelay(10000);
-			altera_s10_100ghip_regdump(priv);
+			udelay(20000);
 		} else {
 			printk("altera_s10_100ghip: Interace is ready for link up.\n");
 			break;
