@@ -292,10 +292,12 @@ static int s10_100ghip_rx(struct altera_s10_100ghip_private *priv, int limit)
 		pktstatus = rxstatus >> 16;
 		pktlength = rxstatus & 0xffff;
 
-		if ((pktstatus & 0xFF) || (pktlength == 0))
+		if ((pktstatus & 0xFF) || (pktlength == 0)) {
 			netdev_err(priv->dev,
 				   "RCV pktstatus %08X pktlength %08X\n",
 				   pktstatus, pktlength);
+			break;
+		}
 
 		/* DMA transfer from 100G HIP starts with 2 aditional bytes for
 		 * IP payload alignment. Status returned by get_rx_status()
@@ -640,7 +642,7 @@ static int init_phy(struct net_device *dev)
 			writel(PHY_EIO_SYS_RST, &priv->eth_reconfig->phy_config);
 			udelay(1);
 			writel(0x0, &priv->eth_reconfig->phy_config);
-			udelay(10000);
+			mdelay(10);
 		} else {
 			printk("altera_s10_100ghip: Interace is ready for link up.\n");
 			break;
@@ -665,7 +667,7 @@ static int init_phy(struct net_device *dev)
 			writel(PHY_SOFT_RX_RST, &priv->eth_reconfig->phy_config);
 			udelay(1);
 			writel(0x0, &priv->eth_reconfig->phy_config);
-			udelay(20000);
+			mdelay(20);
 		} else {
 			printk("altera_s10_100ghip: Interace is ready for link up.\n");
 			break;
