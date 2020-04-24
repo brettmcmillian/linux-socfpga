@@ -622,7 +622,7 @@ static int init_phy(struct net_device *dev)
 	int retries;
 	int tx_ready = 0, rx_ready = 0;
 
-	altera_s10_100ghip_xcvr_cal_check(priv);
+/*	altera_s10_100ghip_xcvr_cal_check(priv); */
 
 	for (retries=0; retries < 5; retries++) {
 		/* First check for tx_datapath_ready */
@@ -643,10 +643,8 @@ static int init_phy(struct net_device *dev)
 			udelay(1);
 			writel(0x0, &priv->eth_reconfig->phy_config);
 			mdelay(10);
-		} else {
-			printk("altera_s10_100ghip: Interace is ready for link up.\n");
+		} else
 			break;
-		}
 	}
 
 	for (retries=0; retries < 5; retries++) {
@@ -668,11 +666,11 @@ static int init_phy(struct net_device *dev)
 			udelay(1);
 			writel(0x0, &priv->eth_reconfig->phy_config);
 			mdelay(20);
-		} else {
-			printk("altera_s10_100ghip: Interace is ready for link up.\n");
+		} else
 			break;
-		}
 	}
+
+	printk("altera_s10_100ghip: Interace is ready for link up.\n");
 
 	reg = readl(&priv->eth_reconfig->anlt_sequencer_config);
     reg &= ~ANLT_SEQ_AN_TIMEOUT;
