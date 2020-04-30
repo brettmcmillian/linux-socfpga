@@ -181,7 +181,7 @@ void s10_msgdma_clear_txirq(struct altera_s10_100ghip_private *priv)
 /* return 0 to indicate transmit is pending */
 int s10_msgdma_tx_buffer(struct altera_s10_100ghip_private *priv, struct s10_100ghip_buffer *buffer)
 {
-	csrwr32(lower_32_bits(buffer->dma_addr), priv->tx_dma_desc,
+/*	csrwr32(lower_32_bits(buffer->dma_addr), priv->tx_dma_desc,
 		msgdma_descroffs(read_addr_lo));
 	csrwr32(upper_32_bits(buffer->dma_addr), priv->tx_dma_desc,
 		msgdma_descroffs(read_addr_hi));
@@ -193,6 +193,15 @@ int s10_msgdma_tx_buffer(struct altera_s10_100ghip_private *priv, struct s10_100
 		msgdma_descroffs(stride));
 	csrwr32(MSGDMA_DESC_CTL_TX_SINGLE, priv->tx_dma_desc,
 		msgdma_descroffs(control));
+*/
+	writel(lower_32_bits(buffer->dma_addr), &priv->tx_dma_desc->read_addr_lo);
+	writel(upper_32_bits(buffer->dma_addr), &priv->tx_dma_desc->read_addr_hi);
+	writel(0, &priv->tx_dma_desc->write_addr_lo);
+	writel(0, &priv->tx_dma_desc->write_addr_lo);
+	writel(buffer->len, &priv->tx_dma_desc->len);
+	writel(0, &priv->tx_dma_desc->burst_seq_num);
+	writel(MSGDMA_DESC_TX_STRIDE, &priv->tx_dma_desc->stride);
+	writel(MSGDMA_DESC_CTL_TX_SINGLE, &priv->tx_dma_desc->control);
 	return 0;
 }
 
@@ -234,7 +243,7 @@ void s10_msgdma_add_rx_desc(struct altera_s10_100ghip_private *priv,
 			| MSGDMA_DESC_CTL_TR_ERR_IRQ
 			| MSGDMA_DESC_CTL_GO);
 
-	csrwr32(0, priv->rx_dma_desc, msgdma_descroffs(read_addr_lo));
+/*	csrwr32(0, priv->rx_dma_desc, msgdma_descroffs(read_addr_lo));
 	csrwr32(0, priv->rx_dma_desc, msgdma_descroffs(read_addr_hi));
 	csrwr32(lower_32_bits(dma_addr), priv->rx_dma_desc,
 		msgdma_descroffs(write_addr_lo));
@@ -244,6 +253,15 @@ void s10_msgdma_add_rx_desc(struct altera_s10_100ghip_private *priv,
 	csrwr32(0, priv->rx_dma_desc, msgdma_descroffs(burst_seq_num));
 	csrwr32(0x00010001, priv->rx_dma_desc, msgdma_descroffs(stride));
 	csrwr32(control, priv->rx_dma_desc, msgdma_descroffs(control));
+*/
+	writel(0, &priv->rx_dma_desc->read_addr_lo);
+	writel(0, &priv->rx_dma_desc->read_addr_hi);
+	writel(lower_32_bits(dma_addr), &priv->rx_dma_desc->write_addr_lo);
+	writel(upper_32_bits(dma_addr), &priv->rx_dma_desc->write_addr_hi);
+	writel(len, &priv->rx_dma_desc->len);
+	writel(0, &priv->rx_dma_desc->burst_seq_num);
+	writel(MSGDMA_DESC_TX_STRIDE, &priv->rx_dma_desc->stride);
+	writel(control, &priv->rx_dma_desc->control);
 }
 
 /* status is returned on upper 16 bits,
