@@ -551,12 +551,12 @@ struct altera_s10_100ghip_private {
 
 	/* mSGDMA Rx Dispatcher address space */
 	void __iomem *rx_dma_csr;
-	void __iomem *rx_dma_desc;
+	struct msgdma_extended_desc __iomem *rx_dma_desc;
 	void __iomem *rx_dma_resp;
 
 	/* mSGDMA Tx Dispatcher address space */
 	void __iomem *tx_dma_csr;
-	void __iomem *tx_dma_desc;
+	struct msgdma_extended_desc __iomem *tx_dma_desc;
 
 	/* Rx buffers queue */
 	struct s10_100ghip_buffer *rx_ring;
