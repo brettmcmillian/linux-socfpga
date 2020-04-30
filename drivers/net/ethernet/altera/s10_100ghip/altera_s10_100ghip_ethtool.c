@@ -134,436 +134,292 @@ static void s10_100ghip_fill_stats(struct net_device *dev, struct ethtool_stats 
 	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
 	u64 ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_frames_lessthan_64B_w_crcerr_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_frames_lessthan_64B_w_crcerr_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_frames_lessthan_64B_w_crcerr_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_frames_lessthan_64B_w_crcerr_low);
 	buf[0] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_oversized_frames_w_crcerr_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_oversized_frames_w_crcerr_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_oversized_frames_w_crcerr_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_oversized_frames_w_crcerr_low);
 	buf[1] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_frames_w_crcerr_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_frames_w_crcerr_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_frames_w_crcerr_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_frames_w_crcerr_low);
 	buf[2] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_frames_w_crcerr_on_ok_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_frames_w_crcerr_on_ok_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_frames_w_crcerr_on_ok_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_frames_w_crcerr_on_ok_low);
 	buf[3] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_multicast_data_frames_w_crcerr_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_multicast_data_frames_w_crcerr_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_multicast_data_frames_w_crcerr_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_multicast_data_frames_w_crcerr_low);
 	buf[4] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_broadcast_data_frames_w_crcerr_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_broadcast_data_frames_w_crcerr_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_broadcast_data_frames_w_crcerr_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_broadcast_data_frames_w_crcerr_low);
 	buf[5] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_unicast_data_frames_w_crcerr_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_unicast_data_frames_w_crcerr_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_unicast_data_frames_w_crcerr_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_unicast_data_frames_w_crcerr_low);
 	buf[6] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_multicast_control_frames_w_crcerr_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_multicast_control_frames_w_crcerr_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_multicast_control_frames_w_crcerr_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_multicast_control_frames_w_crcerr_low);
 	buf[7] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_broadcast_control_frames_w_crcerr_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_broadcast_control_frames_w_crcerr_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_broadcast_control_frames_w_crcerr_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_broadcast_control_frames_w_crcerr_low);
 	buf[8] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_unicast_control_frames_w_crcerr_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_unicast_control_frames_w_crcerr_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_unicast_control_frames_w_crcerr_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_unicast_control_frames_w_crcerr_low);
 	buf[9] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_pause_frame_w_crcerr_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_pause_frame_w_crcerr_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_pause_frame_w_crcerr_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_pause_frame_w_crcerr_low);
 	buf[10] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_64B_frames_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_64B_frames_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_64B_frames_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_64B_frames_low);
 	buf[11] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_65B_127B_frames_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_65B_127B_frames_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_65B_127B_frames_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_65B_127B_frames_low);
 	buf[12] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_128B_255B_frames_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_128B_255B_frames_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_128B_255B_frames_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_128B_255B_frames_low);
 	buf[13] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_256B_511B_frames_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_256B_511B_frames_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_256B_511B_frames_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_256B_511B_frames_low);
 	buf[14] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_512B_1023B_frames_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_512B_1023B_frames_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_512B_1023B_frames_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_512B_1023B_frames_low);
 	buf[15] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_1024B_1518B_frames_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_1024B_1518B_frames_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_1024B_1518B_frames_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_1024B_1518B_frames_low);
 	buf[16] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_1519B_max_frames_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_1519B_max_frames_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_1519B_max_frames_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_1519B_max_frames_low);
 	buf[17] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_oversize_frames_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_oversize_frames_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_oversize_frames_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_oversize_frames_low);
 	buf[18] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_multicast_data_frames_wo_err_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_multicast_data_frames_wo_err_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_multicast_data_frames_wo_err_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_multicast_data_frames_wo_err_low);
 	buf[19] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_broadcast_data_frames_wo_err_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_broadcast_data_frames_wo_err_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_broadcast_data_frames_wo_err_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_broadcast_data_frames_wo_err_low);
 	buf[20] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_unicast_data_frames_wo_err_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_unicast_data_frames_wo_err_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_unicast_data_frames_wo_err_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_unicast_data_frames_wo_err_low);
 	buf[21] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_multicast_control_frames_wo_err_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_multicast_control_frames_wo_err_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_multicast_control_frames_wo_err_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_multicast_control_frames_wo_err_low);
 	buf[22] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_broadcast_control_frames_wo_err_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_broadcast_control_frames_wo_err_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_broadcast_control_frames_wo_err_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_broadcast_control_frames_wo_err_low);
 	buf[23] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_unicast_control_frames_wo_err_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_unicast_control_frames_wo_err_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_unicast_control_frames_wo_err_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_unicast_control_frames_wo_err_low);
 	buf[24] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_pause_frame_wo_err_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_pause_frame_wo_err_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_pause_frame_wo_err_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_pause_frame_wo_err_low);
 	buf[25] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_frames_lessthan_64B_and_crcerr_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_frames_lessthan_64B_and_crcerr_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_frames_lessthan_64B_and_crcerr_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_frames_lessthan_64B_and_crcerr_low);
 	buf[26] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_num_frame_starts_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_num_frame_starts_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_num_frame_starts_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_num_frame_starts_low);
 	buf[27] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_num_length_errors_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_num_length_errors_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_num_length_errors_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_num_length_errors_low);
 	buf[28] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_pfc_frames_w_crcerr_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_pfc_frames_w_crcerr_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_pfc_frames_w_crcerr_high) << 32;
+	ext |= v(priv->eth_reconfig->txstat_pfc_frames_w_crcerr_low);
 	buf[29] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_pfc_frames_wo_err_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_pfc_frames_wo_err_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_pfc_frames_wo_err_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_pfc_frames_wo_err_low);
 	buf[30] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_payload_wo_err_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_payload_wo_err_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_payload_wo_err_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_payload_wo_err_low);
 	buf[31] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_frame_bytes_wo_err_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_frame_bytes_wo_err_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_frame_bytes_wo_err_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_frame_bytes_wo_err_low);
 	buf[32] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_malformed_frames_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_malformed_frames_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_malformed_frames_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_malformed_frames_low);
 	buf[33] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_packets_dropped_w_err_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_packets_dropped_w_err_low));
+	ext = (u64) v(priv->eth_reconfig->txstat_packets_dropped_w_err_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_packets_dropped_w_err_low);
 	buf[34] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_frames_w_bad_length_type_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(txstat_frames_w_bad_length_type_low));
+	ext = (u64) readl(priv->eth_reconfig->txstat_frames_w_bad_length_type_high) << 32;
+	ext |= readl(priv->eth_reconfig->txstat_frames_w_bad_length_type_low);
 	buf[35] = ext;
 
-		ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_frames_lessthan_64B_w_crcerr_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_frames_lessthan_64B_w_crcerr_low));
+		ext = (u64) readl(priv->eth_reconfig->rxstat_frames_lessthan_64B_w_crcerr_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_frames_lessthan_64B_w_crcerr_low);
 	buf[36] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_oversized_frames_w_crcerr_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_oversized_frames_w_crcerr_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_oversized_frames_w_crcerr_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_oversized_frames_w_crcerr_low);
 	buf[37] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_frames_w_crcerr_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_frames_w_crcerr_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_frames_w_crcerr_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_frames_w_crcerr_low);
 	buf[38] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_frames_w_crcerr_on_ok_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_frames_w_crcerr_on_ok_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_frames_w_crcerr_on_ok_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_frames_w_crcerr_on_ok_low);
 	buf[39] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_multicast_data_frames_w_crcerr_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_multicast_data_frames_w_crcerr_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_multicast_data_frames_w_crcerr_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_multicast_data_frames_w_crcerr_low);
 	buf[40] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_broadcast_data_frames_w_crcerr_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_broadcast_data_frames_w_crcerr_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_broadcast_data_frames_w_crcerr_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_broadcast_data_frames_w_crcerr_low);
 	buf[41] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_unicast_data_frames_w_crcerr_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_unicast_data_frames_w_crcerr_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_unicast_data_frames_w_crcerr_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_unicast_data_frames_w_crcerr_low);
 	buf[42] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_multicast_control_frames_w_crcerr_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_multicast_control_frames_w_crcerr_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_multicast_control_frames_w_crcerr_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_multicast_control_frames_w_crcerr_low);
 	buf[43] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_broadcast_control_frames_w_crcerr_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_broadcast_control_frames_w_crcerr_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_broadcast_control_frames_w_crcerr_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_broadcast_control_frames_w_crcerr_low);
 	buf[44] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_unicast_control_frames_w_crcerr_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_unicast_control_frames_w_crcerr_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_unicast_control_frames_w_crcerr_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_unicast_control_frames_w_crcerr_low);
 	buf[45] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_pause_frame_w_crcerr_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_pause_frame_w_crcerr_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_pause_frame_w_crcerr_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_pause_frame_w_crcerr_low);
 	buf[46] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_64B_frames_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_64B_frames_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_64B_frames_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_64B_frames_low);
 	buf[47] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_65B_127B_frames_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_65B_127B_frames_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_65B_127B_frames_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_65B_127B_frames_low);
 	buf[48] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_128B_255B_frames_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_128B_255B_frames_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_128B_255B_frames_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_128B_255B_frames_low);
 	buf[49] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_256B_511B_frames_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_256B_511B_frames_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_256B_511B_frames_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_256B_511B_frames_low);
 	buf[50] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_512B_1023B_frames_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_512B_1023B_frames_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_512B_1023B_frames_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_512B_1023B_frames_low);
 	buf[51] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_1024B_1518B_frames_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_1024B_1518B_frames_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_1024B_1518B_frames_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_1024B_1518B_frames_low);
 	buf[52] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_1519B_max_frames_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_1519B_max_frames_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_1519B_max_frames_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_1519B_max_frames_low);
 	buf[53] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_oversize_frames_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_oversize_frames_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_oversize_frames_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_oversize_frames_low);
 	buf[54] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_multicast_data_frames_wo_err_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_multicast_data_frames_wo_err_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_multicast_data_frames_wo_err_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_multicast_data_frames_wo_err_low);
 	buf[55] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_broadcast_data_frames_wo_err_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_broadcast_data_frames_wo_err_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_broadcast_data_frames_wo_err_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_broadcast_data_frames_wo_err_low);
 	buf[56] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_unicast_data_frames_wo_err_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_unicast_data_frames_wo_err_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_unicast_data_frames_wo_err_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_unicast_data_frames_wo_err_low);
 	buf[57] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_multicast_control_frames_wo_err_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_multicast_control_frames_wo_err_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_multicast_control_frames_wo_err_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_multicast_control_frames_wo_err_low);
 	buf[58] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_broadcast_control_frames_wo_err_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_broadcast_control_frames_wo_err_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_broadcast_control_frames_wo_err_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_broadcast_control_frames_wo_err_low);
 	buf[59] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_unicast_control_frames_wo_err_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_unicast_control_frames_wo_err_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_unicast_control_frames_wo_err_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_unicast_control_frames_wo_err_low);
 	buf[60] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_pause_frame_wo_err_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_pause_frame_wo_err_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_pause_frame_wo_err_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_pause_frame_wo_err_low);
 	buf[61] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_frames_lessthan_64B_and_crcerr_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_frames_lessthan_64B_and_crcerr_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_frames_lessthan_64B_and_crcerr_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_frames_lessthan_64B_and_crcerr_low);
 	buf[62] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_num_frame_starts_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_num_frame_starts_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_num_frame_starts_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_num_frame_starts_low);
 	buf[63] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_num_length_errors_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_num_length_errors_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_num_length_errors_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_num_length_errors_low);
 	buf[64] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_pfc_frames_w_crcerr_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_pfc_frames_w_crcerr_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_pfc_frames_w_crcerr_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_pfc_frames_w_crcerr_low);
 	buf[65] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_pfc_frames_wo_err_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_pfc_frames_wo_err_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_pfc_frames_wo_err_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_pfc_frames_wo_err_low);
 	buf[66] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_payload_wo_err_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_payload_wo_err_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_payload_wo_err_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_payload_wo_err_low);
 	buf[67] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_frame_bytes_wo_err_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_frame_bytes_wo_err_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_frame_bytes_wo_err_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_frame_bytes_wo_err_low);
 	buf[68] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_malformed_frames_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_malformed_frames_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_malformed_frames_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_malformed_frames_low);
 	buf[69] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_packets_dropped_w_err_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_packets_dropped_w_err_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_packets_dropped_w_err_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_packets_dropped_w_err_low);
 	buf[70] = ext;
 
-	ext = (u64) csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_frames_w_bad_length_type_high)) << 32;
-	ext |= csrrd32(priv->eth_reconfig,
-			 s10_100ghip_ethreconfigoffs(rxstat_frames_w_bad_length_type_low));
+	ext = (u64) readl(priv->eth_reconfig->rxstat_frames_w_bad_length_type_high) << 32;
+	ext |= readl(priv->eth_reconfig->rxstat_frames_w_bad_length_type_low);
 	buf[71] = ext;
 	
 }
@@ -614,10 +470,10 @@ static void s10_100ghip_get_regs(struct net_device *dev, struct ethtool_regs *re
 	regs->version = 1;
 
 	for (i = 0; i < S10_100GHIP_NUM_REGS/2; i++)
-		buf[i] = csrrd32(priv->eth_reconfig, 0x800 + i * 4);
+		buf[i] = readl(priv->eth_reconfig + 0x800 + i * 4);
 
 	for (i = S10_100GHIP_NUM_REGS/2; i < S10_100GHIP_NUM_REGS; i++)
-		buf[i] = csrrd32(priv->eth_reconfig, 0x900 + i * 4);
+		buf[i] = readl(priv->eth_reconfig + 0x900 + i * 4);
 }
 
 static u32 s10_100ghip_get_link(struct net_device *dev) {

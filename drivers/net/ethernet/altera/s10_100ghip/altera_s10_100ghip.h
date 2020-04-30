@@ -550,12 +550,12 @@ struct altera_s10_100ghip_private {
 	u32	revision;
 
 	/* mSGDMA Rx Dispatcher address space */
-	void __iomem *rx_dma_csr;
+	struct msgdma_csr __iomem *rx_dma_csr;
 	struct msgdma_extended_desc __iomem *rx_dma_desc;
-	void __iomem *rx_dma_resp;
+	struct msgdma_response __iomem *rx_dma_resp;
 
 	/* mSGDMA Tx Dispatcher address space */
-	void __iomem *tx_dma_csr;
+	struct msgdma_csr __iomem *tx_dma_csr;
 	struct msgdma_extended_desc __iomem *tx_dma_desc;
 
 	/* Rx buffers queue */
@@ -624,50 +624,5 @@ void altera_s10_100ghip_set_ethtool_ops(struct net_device *);
 void altera_s10_100ghip_regdump(struct altera_s10_100ghip_private *priv);
 
 void altera_s10_100ghip_xcvr_cal_check(struct altera_s10_100ghip_private *priv);
-
-static inline
-u32 csrrd32(void __iomem *mac, size_t offs)
-{
-	void __iomem *paddr = (void __iomem *)((uintptr_t)mac + offs);
-	return readl(paddr);
-}
-
-static inline
-u16 csrrd16(void __iomem *mac, size_t offs)
-{
-	void __iomem *paddr = (void __iomem *)((uintptr_t)mac + offs);
-	return readw(paddr);
-}
-
-static inline
-u8 csrrd8(void __iomem *mac, size_t offs)
-{
-	void __iomem *paddr = (void __iomem *)((uintptr_t)mac + offs);
-	return readb(paddr);
-}
-
-static inline
-void csrwr32(u32 val, void __iomem *mac, size_t offs)
-{
-	void __iomem *paddr = (void __iomem *)((uintptr_t)mac + offs);
-
-	writel(val, paddr);
-}
-
-static inline
-void csrwr16(u16 val, void __iomem *mac, size_t offs)
-{
-	void __iomem *paddr = (void __iomem *)((uintptr_t)mac + offs);
-
-	writew(val, paddr);
-}
-
-static inline
-void csrwr8(u8 val, void __iomem *mac, size_t offs)
-{
-	void __iomem *paddr = (void __iomem *)((uintptr_t)mac + offs);
-
-	writeb(val, paddr);
-}
 
 #endif /* __ALTERA_S10_100GHIP_H__ */

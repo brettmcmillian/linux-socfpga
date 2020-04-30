@@ -726,12 +726,6 @@ static void s10_100ghip_update_mac_addr(struct altera_s10_100ghip_private *priv,
 static int reset_mac(struct altera_s10_100ghip_private *priv)
 {
 /*	For now don't issue resets.
-
-	int counter;
-	u32 dat;
-
-	dat = csrrd32(priv->phy_dev, s10_100ghip_phycsroffs(config);
-	dat &= 
 */
 
 	return 0;
@@ -753,15 +747,6 @@ static int init_mac(struct altera_s10_100ghip_private *priv)
  */
 static void s10_100ghip_set_mac(struct altera_s10_100ghip_private *priv, bool enable)
 {
-/*	u32 value = csrrd32(priv->eth_reconfig, s10_100ghip_ethreconfigoffs(txmac_config));
-
-	if (enable)
-		value &= ~TX_MAC_DISABLE_TX_MAC;
-	else
-		value |= TX_MAC_DISABLE_TX_MAC;
-
-	csrwr32(value, priv->eth_reconfig, s10_100ghip_ethreconfigoffs(txmac_config));
-*/
 	u32 reg;
 	reg = readl(&priv->eth_reconfig->txmac_config);
 
@@ -1066,7 +1051,7 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 	if (priv->dmaops &&
 		   priv->dmaops->altera_dtype == ALTERA_DTYPE_S10_MSGDMA) {
 		ret = request_and_map(pdev, "rx_resp", &dma_res,
-				      &priv->rx_dma_resp);
+				      (void __iomem **)&priv->rx_dma_resp);
 		if (ret)
 			goto err_free_netdev;
 
@@ -1132,14 +1117,14 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 
 	/* xSGDMA Rx Dispatcher address space */
 	ret = request_and_map(pdev, "rx_csr", &dma_res,
-			      &priv->rx_dma_csr);
+			      (void __iomem **)&priv->rx_dma_csr);
 	if (ret)
 		goto err_free_netdev;
 
 
 	/* xSGDMA Tx Dispatcher address space */
 	ret = request_and_map(pdev, "tx_csr", &dma_res,
-			      &priv->tx_dma_csr);
+			      (void __iomem **)&priv->tx_dma_csr);
 	if (ret)
 		goto err_free_netdev;
 
