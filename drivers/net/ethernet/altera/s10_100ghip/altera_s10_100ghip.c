@@ -1071,7 +1071,7 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 			goto err_free_netdev;
 
 		ret = request_and_map(pdev, "tx_desc", &dma_res,
-				      &priv->tx_dma_desc);
+				      (void __iomem **)&priv->tx_dma_desc);
 		if (ret)
 			goto err_free_netdev;
 
@@ -1079,7 +1079,7 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 		priv->txdescmem_busaddr = dma_res->start;
 
 		ret = request_and_map(pdev, "rx_desc", &dma_res,
-				      &priv->rx_dma_desc);
+				      (void __iomem **)&priv->rx_dma_desc);
 		if (ret)
 			goto err_free_netdev;
 
