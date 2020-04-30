@@ -251,7 +251,7 @@ static void s10_100ghip_fill_stats(struct net_device *dev, struct ethtool_stats 
 	buf[28] = ext;
 
 	ext = (u64) readl(&priv->eth_reconfig->txstat_pfc_frames_w_crcerr_high) << 32;
-	ext |= v(priv->eth_reconfig->txstat_pfc_frames_w_crcerr_low);
+	ext |= readl(priv->eth_reconfig->txstat_pfc_frames_w_crcerr_low);
 	buf[29] = ext;
 
 	ext = (u64) readl(&priv->eth_reconfig->txstat_pfc_frames_wo_err_high) << 32;
@@ -270,7 +270,7 @@ static void s10_100ghip_fill_stats(struct net_device *dev, struct ethtool_stats 
 	ext |= readl(&priv->eth_reconfig->txstat_malformed_frames_low);
 	buf[33] = ext;
 
-	ext = (u64) v(priv->eth_reconfig->txstat_packets_dropped_w_err_high) << 32;
+	ext = (u64) readl(priv->eth_reconfig->txstat_packets_dropped_w_err_high) << 32;
 	ext |= readl(&priv->eth_reconfig->txstat_packets_dropped_w_err_low);
 	buf[34] = ext;
 

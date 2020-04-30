@@ -117,7 +117,7 @@ void s10_msgdma_reset(struct altera_s10_100ghip_private *priv)
 			   "S10 100G HIP Rx mSGDMA resetting bit never cleared!\n");
 
 	/* clear all status bits */
-	writel(MSGDMA_CSR_STAT_MASK, &priv->rx_dma_csr->status));
+	writel(MSGDMA_CSR_STAT_MASK, &priv->rx_dma_csr->status);
 
 	/* Reset Tx mSGDMA */
 	writel(MSGDMA_CSR_STAT_MASK, &priv->tx_dma_csr->status);

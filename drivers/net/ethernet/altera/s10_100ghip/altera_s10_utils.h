@@ -19,9 +19,9 @@
 #ifndef __ALTERA_S10_UTILS_H__
 #define __ALTERA_S10_UTILS_H__
 
-void s10_set_bit(void __iomem *ioaddr, size_t offs, u32 bit_mask);
-void s10_clear_bit(void __iomem *ioaddr, size_t offs, u32 bit_mask);
-int s10_bit_is_set(void __iomem *ioaddr, size_t offs, u32 bit_mask);
-int s10_bit_is_clear(void __iomem *ioaddr, size_t offs, u32 bit_mask);
+void s10_set_bit(void __iomem *ioaddr, u32 bit_mask);
+void s10_clear_bit(void __iomem *ioaddr, u32 bit_mask);
+int s10_bit_is_set(void __iomem *ioaddr, u32 bit_mask);
+int s10_bit_is_clear(void __iomem *ioaddr, u32 bit_mask);
 
 #endif /* __ALTERA_S10_UTILS_H__*/
