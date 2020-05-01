@@ -707,8 +707,8 @@ static void s10_100ghip_update_mac_addr(struct altera_s10_100ghip_private *priv,
 	dat = readl(&priv->eth_reconfig->txmac_config);
 	dat |= TX_MAC_EN_SADDR_INSERT;
 
-	msb = (addr[3] << 24) | (addr[2] << 16) | (addr[1] << 8) | addr[0];
-	lsb = ((addr[5] << 8) | addr[4]) & 0xffff;
+	msb = (addr[2] << 24) | (addr[3] << 16) | (addr[4] << 8) | addr[5];
+	lsb = ((addr[0] << 8) | addr[1]) & 0xffff;
 
 	/* Set primary MAC address */
 	writel(msb, &priv->eth_reconfig->txmac_src_address_low);
