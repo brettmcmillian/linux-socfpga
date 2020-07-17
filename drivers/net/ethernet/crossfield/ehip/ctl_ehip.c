@@ -434,7 +434,7 @@ static int ctl_ehip_poll(struct napi_struct *napi, int budget)
 /*
  * DMA TX & RX FIFO interrupt routing
  */
-static irqreturn_t altera_isr(int irq, void *dev_id)
+static irqreturn_t crossfield_isr(int irq, void *dev_id)
 {
 	struct net_device *dev = dev_id;
 	struct ctl_ehip_private *priv;
@@ -878,7 +878,7 @@ static int ctl_ehip_open(struct net_device *dev)
 
 
 	/* Register RX interrupt */
-	ret = request_irq(priv->rx_irq, altera_isr, IRQF_SHARED,
+	ret = request_irq(priv->rx_irq, crossfield_isr, IRQF_SHARED,
 			  dev->name, dev);
 	if (ret) {
 		netdev_err(dev, "Unable to register RX interrupt %d\n",
@@ -887,7 +887,7 @@ static int ctl_ehip_open(struct net_device *dev)
 	}
 
 	/* Register TX interrupt */
-	ret = request_irq(priv->tx_irq, altera_isr, IRQF_SHARED,
+	ret = request_irq(priv->tx_irq, crossfield_isr, IRQF_SHARED,
 			  dev->name, dev);
 	if (ret) {
 		netdev_err(dev, "Unable to register TX interrupt %d\n",
@@ -1049,10 +1049,10 @@ static int ctl_ehip_probe(struct platform_device *pdev)
 	of_id = of_match_device(ctl_ehip_ids, &pdev->dev);
 
 	if (of_id)
-		priv->dmaops = (struct altera_dmaops *)of_id->data;
+		priv->dmaops = (struct crossfield_dmaops *)of_id->data;
 
 	if (priv->dmaops &&
-		   priv->dmaops->altera_dtype == CROSSFIELD_DTYPE_EHIP_DMA) {
+		   priv->dmaops->crossfield_dtype == CROSSFIELD_DTYPE_EHIP_DMA) {
 		ret = request_and_map(pdev, "rx_resp", &dma_res,
 				      (void __iomem **)&priv->rx_dma_resp);
 		if (ret)

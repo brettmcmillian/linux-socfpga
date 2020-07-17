@@ -23,20 +23,20 @@
 #ifndef __CTL_EHIP_DMA_H__
 #define __CTL_EHIP_DMA_H__
 
-void ctl_ehip_dma_check(struct altera_s10_100ghip_private *);
-void ctl_ehip_dma_reset(struct altera_s10_100ghip_private *);
-void ctl_ehip_dma_enable_txirq(struct altera_s10_100ghip_private *);
-void ctl_ehip_dma_enable_rxirq(struct altera_s10_100ghip_private *);
-void ctl_ehip_dma_disable_rxirq(struct altera_s10_100ghip_private *);
-void ctl_ehip_dma_disable_txirq(struct altera_s10_100ghip_private *);
-void ctl_ehip_dma_clear_rxirq(struct altera_s10_100ghip_private *);
-void ctl_ehip_dma_clear_txirq(struct altera_s10_100ghip_private *);
-u32 ctl_ehip_dma_tx_completions(struct altera_s10_100ghip_private *);
-void ctl_ehip_dma_add_rx_desc(struct altera_s10_100ghip_private *, struct s10_100ghip_buffer *);
-int ctl_ehip_dma_tx_buffer(struct altera_s10_100ghip_private *, struct s10_100ghip_buffer *);
-u32 ctl_ehip_dma_rx_status(struct altera_s10_100ghip_private *);
-int ctl_ehip_dma_initialize(struct altera_s10_100ghip_private *);
-void ctl_ehip_dma_uninitialize(struct altera_s10_100ghip_private *);
-void ctl_ehip_dma_start_rxdma(struct altera_s10_100ghip_private *);
+void ctl_ehip_dma_check(struct ctl_ehip_private *);
+void ctl_ehip_dma_reset(struct ctl_ehip_private *);
+void ctl_ehip_dma_enable_txirq(struct ctl_ehip_private *);
+void ctl_ehip_dma_enable_rxirq(struct ctl_ehip_private *);
+void ctl_ehip_dma_disable_rxirq(struct ctl_ehip_private *);
+void ctl_ehip_dma_disable_txirq(struct ctl_ehip_private *);
+void ctl_ehip_dma_clear_rxirq(struct ctl_ehip_private *);
+void ctl_ehip_dma_clear_txirq(struct ctl_ehip_private *);
+u32 ctl_ehip_dma_tx_completions(struct ctl_ehip_private *);
+void ctl_ehip_dma_add_rx_desc(struct ctl_ehip_private *, struct ctl_ehip_buffer *);
+int ctl_ehip_dma_tx_buffer(struct ctl_ehip_private *, struct ctl_ehip_buffer *);
+u32 ctl_ehip_dma_rx_status(struct ctl_ehip_private *);
+int ctl_ehip_dma_initialize(struct ctl_ehip_private *);
+void ctl_ehip_dma_uninitialize(struct ctl_ehip_private *);
+void ctl_ehip_dma_start_rxdma(struct ctl_ehip_private *);
 
 #endif /*  __CTL_EHIP_DMA_H__ */
