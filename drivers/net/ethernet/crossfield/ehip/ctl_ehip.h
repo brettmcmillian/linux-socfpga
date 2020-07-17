@@ -1,12 +1,12 @@
 /*
- * Intel Stratix 10 100G Ethernet Hard IP Driver
+ * Crossfield Ethernet Hard IP Driver for Intel Stratix 10 100G eHIP
  * Copyright (C) 2020 Crossfield Technology LLC. All rights reserved.
  *
  * Contributors:
  *   Brett McMillian
  *
  * This driver is based on the Altera TSE driver and must be used
- * with the altera_s10_msgdma driver.
+ * with the ctl_ehip_dma driver.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -21,10 +21,10 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __ALTERA_S10_100GHIP_H__
-#define __ALTERA_S10_100GHIP_H__
+#ifndef __CTL_EHIP_H__
+#define __CTL_EHIP_H__
 
-#define ALTERA_S10_100GHIP_RESOURCE_NAME	"altera_s10_100ghip"
+#define CTL_EHIP_RESOURCE_NAME	"ctl_ehip"
 
 #include <linux/bitops.h>
 #include <linux/if_vlan.h>
@@ -37,26 +37,26 @@
 #define TX_MAC_CSR_OFFSET = 0x1000 /* (0x400 word offset) */
 #define RX_MAC_CSR_OFFSET = 0x1400 /* (0x500 word offset) */
 
-#define ALTERA_S10_100GHIP_SW_RESET_WATCHDOG_CNTR	10000
-#define ALTERA_S10_100GHIP_MAC_FIFO_WIDTH		4	/* TX/RX FIFO width in
+#define CTL_EHIP_SW_RESET_WATCHDOG_CNTR	10000
+#define CTL_EHIP_MAC_FIFO_WIDTH		4	/* TX/RX FIFO width in
 							 * bytes
 							 */
 /* Rx FIFO default settings */
-#define ALTERA_S10_100GHIP_RX_SECTION_EMPTY	16
-#define ALTERA_S10_100GHIP_RX_SECTION_FULL	0
-#define ALTERA_S10_100GHIP_RX_ALMOST_EMPTY	8
-#define ALTERA_S10_100GHIP_RX_ALMOST_FULL	8
+#define CTL_EHIP_RX_SECTION_EMPTY	16
+#define CTL_EHIP_RX_SECTION_FULL	0
+#define CTL_EHIP_RX_ALMOST_EMPTY	8
+#define CTL_EHIP_RX_ALMOST_FULL	8
 
 /* Tx FIFO default settings */
-#define ALTERA_S10_100GHIP_TX_SECTION_EMPTY	16
-#define ALTERA_S10_100GHIP_TX_SECTION_FULL	0
-#define ALTERA_S10_100GHIP_TX_ALMOST_EMPTY	8
-#define ALTERA_S10_100GHIP_TX_ALMOST_FULL	3
+#define CTL_EHIP_TX_SECTION_EMPTY	16
+#define CTL_EHIP_TX_SECTION_FULL	0
+#define CTL_EHIP_TX_ALMOST_EMPTY	8
+#define CTL_EHIP_TX_ALMOST_FULL	3
 
 /* MAC function configuration default settings */
-#define ALTERA_S10_100GHIP_TX_IPG_LENGTH	12
+#define CTL_EHIP_TX_IPG_LENGTH	12
 
-#define ALTERA_S10_100GHIP_PAUSE_QUANTA		0xffff
+#define CTL_EHIP_PAUSE_QUANTA		0xffff
 
 #define SUPPORTED_100000baseSR4_Full		1ul << 37;
 
@@ -126,11 +126,11 @@
 
 /* Transmit and Receive Command Registers Bit Definitions
  */
-#define ALTERA_S10_100GHIP_TX_CMD_STAT_OMIT_CRC		BIT(17)
-#define ALTERA_S10_100GHIP_TX_CMD_STAT_TX_SHIFT16	BIT(18)
-#define ALTERA_S10_100GHIP_RX_CMD_STAT_RX_SHIFT16	BIT(25)
+#define CTL_EHIP_TX_CMD_STAT_OMIT_CRC		BIT(17)
+#define CTL_EHIP_TX_CMD_STAT_TX_SHIFT16	BIT(18)
+#define CTL_EHIP_RX_CMD_STAT_RX_SHIFT16	BIT(25)
 
-#define ALTERA_S10_100GHIP_TX_PCS_READY				GET_BIT_VALUE(v, 0)
+#define CTL_EHIP_TX_PCS_READY				GET_BIT_VALUE(v, 0)
 
 #define S10_100GHIP_TX_PLL_NOT_LOCKED -1
 #define S10_100GHIP_RX_CDR_PLL_NOT_LOCKED -2
@@ -140,7 +140,7 @@
 #define TX_MAC_DISABLE_TX_MAC	BIT(2)
 #define TX_MAC_DISABLE_TXVLAN	BIT(1)
 
-struct altera_s10_100ghip_ethreconfig {
+struct ctl_ehip_ethreconfig {
 
 	u32 padding[176];
 
@@ -467,7 +467,7 @@ struct altera_s10_100ghip_ethreconfig {
 
 #define EN_BACKGROUND_CAL		BIT(0)
 
-struct altera_s10_100ghip_xcvrreconfig {
+struct ctl_ehip_xcvrreconfig {
 	u32 padding[104];
 
 	/* Transmitter PMA Logical Register Map */
@@ -489,13 +489,13 @@ struct altera_s10_100ghip_xcvrreconfig {
 
 #define RX_PMA_REG_OFFSET 125
 
-#define s10_100ghip_ethreconfigoffs(a) (offsetof(struct altera_s10_100ghip_ethreconfig, a))
-#define s10_100ghip_xcvrreconfigoffs(a) (offsetof(struct altera_s10_100ghip_xcvrreconfig, a))
+#define ctl_ehip_ethreconfigoffs(a) (offsetof(struct ctl_ehip_ethreconfig, a))
+#define ctl_ehip_xcvrreconfigoffs(a) (offsetof(struct ctl_ehip_xcvrreconfig, a))
 
 /* Wrapper around a pointer to a socket buffer,
  * so a DMA handle can be stored along with the buffer
  */
-struct s10_100ghip_buffer {
+struct ctl_ehip_buffer {
 	struct list_head lh;
 	struct sk_buff *skb;
 	dma_addr_t dma_addr;
@@ -503,46 +503,45 @@ struct s10_100ghip_buffer {
 	int mapped_as_page;
 };
 
-struct altera_s10_100ghip_private;
+struct ctl_ehip_private;
 
-#define ALTERA_DTYPE_S10_SGDMA 1
-#define ALTERA_DTYPE_S10_MSGDMA 2
+#define CROSSFIELD_DTYPE_EHIP_DMA 1
 
-/* standard DMA interface for MSGDMA */
-struct altera_dmaops {
-	int altera_dtype;
+/* Standard DMA interface for eHIP DMA */
+struct crossfield_dmaops {
+	int crossfield_dtype;
 	int dmamask;
-	void (*reset_dma)(struct altera_s10_100ghip_private *);
-	void (*enable_txirq)(struct altera_s10_100ghip_private *);
-	void (*enable_rxirq)(struct altera_s10_100ghip_private *);
-	void (*disable_txirq)(struct altera_s10_100ghip_private *);
-	void (*disable_rxirq)(struct altera_s10_100ghip_private *);
-	void (*clear_txirq)(struct altera_s10_100ghip_private *);
-	void (*clear_rxirq)(struct altera_s10_100ghip_private *);
-	int (*tx_buffer)(struct altera_s10_100ghip_private *, struct s10_100ghip_buffer *);
-	u32 (*tx_completions)(struct altera_s10_100ghip_private *);
-	void (*add_rx_desc)(struct altera_s10_100ghip_private *, struct s10_100ghip_buffer *);
-	u32 (*get_rx_status)(struct altera_s10_100ghip_private *);
-	int (*init_dma)(struct altera_s10_100ghip_private *);
-	void (*uninit_dma)(struct altera_s10_100ghip_private *);
-	void (*start_rxdma)(struct altera_s10_100ghip_private *);
+	void (*reset_dma)(struct ctl_ehip_private *);
+	void (*enable_txirq)(struct ctl_ehip_private *);
+	void (*enable_rxirq)(struct ctl_ehip_private *);
+	void (*disable_txirq)(struct ctl_ehip_private *);
+	void (*disable_rxirq)(struct ctl_ehip_private *);
+	void (*clear_txirq)(struct ctl_ehip_private *);
+	void (*clear_rxirq)(struct ctl_ehip_private *);
+	int (*tx_buffer)(struct ctl_ehip_private *, struct ctl_ehip_buffer *);
+	u32 (*tx_completions)(struct ctl_ehip_private *);
+	void (*add_rx_desc)(struct ctl_ehip_private *, struct ctl_ehip_buffer *);
+	u32 (*get_rx_status)(struct ctl_ehip_private *);
+	int (*init_dma)(struct ctl_ehip_private *);
+	void (*uninit_dma)(struct ctl_ehip_private *);
+	void (*start_rxdma)(struct ctl_ehip_private *);
 };
 
 /* This structure is private to each device.
  */
-struct altera_s10_100ghip_private {
+struct ctl_ehip_private {
 	struct net_device *dev;
 	struct device *device;
 	struct napi_struct napi;
 
 	/* Ethernet Reconfiguration Address Space */
-	struct altera_s10_100ghip_ethreconfig __iomem *eth_reconfig;
+	struct ctl_ehip_ethreconfig __iomem *eth_reconfig;
 
 	/* XCVR Reconfiguration Address Spaces */
-	struct altera_s10_100ghip_xcvrreconfig __iomem *xcvr_reconfig0;
-	struct altera_s10_100ghip_xcvrreconfig __iomem *xcvr_reconfig1;
-	struct altera_s10_100ghip_xcvrreconfig __iomem *xcvr_reconfig2;
-	struct altera_s10_100ghip_xcvrreconfig __iomem *xcvr_reconfig3;
+	struct ctl_ehip_xcvrreconfig __iomem *xcvr_reconfig0;
+	struct ctl_ehip_xcvrreconfig __iomem *xcvr_reconfig1;
+	struct ctl_ehip_xcvrreconfig __iomem *xcvr_reconfig2;
+	struct ctl_ehip_xcvrreconfig __iomem *xcvr_reconfig3;
 
 	/* System ID */
 	u32 __iomem *sysid;
@@ -550,24 +549,24 @@ struct altera_s10_100ghip_private {
 	/* TSE Revision */
 	u32	revision;
 
-	/* mSGDMA Rx Dispatcher address space */
-	struct msgdma_csr __iomem *rx_dma_csr;
-	struct msgdma_extended_desc __iomem *rx_dma_desc;
-	struct msgdma_response __iomem *rx_dma_resp;
+	/* eHIP DMA Rx Dispatcher address space */
+	struct ehip_dma_csr __iomem *rx_dma_csr;
+	struct ehip_dma_desc __iomem *rx_dma_desc;
+	struct ehip_dma_response __iomem *rx_dma_resp;
 
-	/* mSGDMA Tx Dispatcher address space */
-	struct msgdma_csr __iomem *tx_dma_csr;
-	struct msgdma_extended_desc __iomem *tx_dma_desc;
+	/* eHIP DMA Tx Dispatcher address space */
+	struct ehip_dma_csr __iomem *tx_dma_csr;
+	struct ehip_dma_desc __iomem *tx_dma_desc;
 
 	/* Rx buffers queue */
-	struct s10_100ghip_buffer *rx_ring;
+	struct ctl_ehip_buffer *rx_ring;
 	u32 rx_cons;
 	u32 rx_prod;
 	u32 rx_ring_size;
 	u32 rx_dma_buf_sz;
 
 	/* Tx ring buffer */
-	struct s10_100ghip_buffer *tx_ring;
+	struct ctl_ehip_buffer *tx_ring;
 	u32 tx_prod;
 	u32 tx_cons;
 	u32 tx_ring_size;
@@ -615,15 +614,15 @@ struct altera_s10_100ghip_private {
 	/* ethtool msglvl option */
 	u32 msg_enable;
 
-	struct altera_dmaops *dmaops;
+	struct crossfield_dmaops *dmaops;
 };
 
 /* Function prototypes
  */
-void altera_s10_100ghip_set_ethtool_ops(struct net_device *);
+void ctl_ehip_set_ethtool_ops(struct net_device *);
 
-void altera_s10_100ghip_regdump(struct altera_s10_100ghip_private *priv);
+void ctl_ehip_regdump(struct ctl_ehip_private *priv);
 
-void altera_s10_100ghip_xcvr_cal_check(struct altera_s10_100ghip_private *priv);
+void ctl_ehip_xcvr_cal_check(struct ctl_ehip_private *priv);
 
-#endif /* __ALTERA_S10_100GHIP_H__ */
+#endif /* __CTL_EHIP_H__ */

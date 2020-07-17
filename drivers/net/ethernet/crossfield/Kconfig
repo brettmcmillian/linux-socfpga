@@ -1,0 +1,24 @@
+#
+# Altera Network Device Configuration
+# 
+
+config NET_VENDOR_CROSSFIELD
+	bool "Crossfield network device drivers"
+	default y
+	---help---
+	Crossfield network drivers for Intel FPGA SoCs.
+
+if NET_VENDOR_CROSSFIELD
+
+config CROSSFIELD_EHIP
+	tristate "Crossfield Ethernet Hard IP support for Intel FPGA SoCs"
+	depends on HAS_DMA
+	select PHYLINK
+	---help---
+	  This driver supports the Intel Stratix 10 100G Hard IP MAC+PCS
+	  with Crossfield's DMA engine.
+
+	  To compile this driver as a module, choose M here. The module
+	  will be called crossfieldehip.
+
+endif # NET_VENDOR_CROSSFIELD

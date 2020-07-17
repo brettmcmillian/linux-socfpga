@@ -1,12 +1,13 @@
 /*
- * Ethtool support for theIntel Stratix 10 100G Ethernet Hard IP Driver
+ * Ethtool support for the Crossfield Ethernet Hard IP Driver
+ * for Intel FPGA SoCs
  * Copyright (C) 2020 Crossfield Technology LLC. All rights reserved.
  *
  * Contributors:
  *   Brett McMillian
  *
  * This driver is based on the Altera TSE driver and must be used
- * with the altera_s10_100ghip driver.
+ * with the ctl_ehip driver.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -27,10 +28,10 @@
 #include <linux/phy.h>
 #include <linux/phylink.h>
 
-#include "altera_s10_100ghip.h"
+#include "ctl_ehip.h"
 
-#define S10_100GHIP_STATS_LEN	72
-#define S10_100GHIP_NUM_REGS	124
+#define EHIP_STATS_LEN	72
+#define EHIP_NUM_REGS	124
 
 static char const stat_gstrings[][ETH_GSTRING_LEN] = {
 	"tx_frames_lessthan_64B_w_crcerr",
@@ -107,13 +108,13 @@ static char const stat_gstrings[][ETH_GSTRING_LEN] = {
 	"rx_frames_w_bad_length_type",
 };
 
-static void s10_100ghip_get_drvinfo(struct net_device *dev,
+static void ehip_get_drvinfo(struct net_device *dev,
 			    struct ethtool_drvinfo *info)
 {
-	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+	struct ctl_ehip_private *priv = netdev_priv(dev);
 	u32 rev = readl(&priv->eth_reconfig->phy_revision_id);
 
-	strcpy(info->driver, "altera_s10_100ghip");
+	strcpy(info->driver, "ctl_ehip_driver");
 	strcpy(info->version, "v1.0");
 	snprintf(info->fw_version, ETHTOOL_FWVERS_LEN, "v%d.%d",
 		 rev & 0xFFFF, (rev & 0xFFFF0000) >> 16);
@@ -123,15 +124,15 @@ static void s10_100ghip_get_drvinfo(struct net_device *dev,
 /* Fill in a buffer with the strings which correspond to the
  * stats
  */
-static void s10_100ghip_gstrings(struct net_device *dev, u32 stringset, u8 *buf)
+static void ctl_ehip_gstrings(struct net_device *dev, u32 stringset, u8 *buf)
 {
-	memcpy(buf, stat_gstrings, S10_100GHIP_STATS_LEN * ETH_GSTRING_LEN);
+	memcpy(buf, stat_gstrings, EHIP_STATS_LEN * ETH_GSTRING_LEN);
 }
 
-static void s10_100ghip_fill_stats(struct net_device *dev, struct ethtool_stats *dummy,
+static void ctl_ehip_fill_stats(struct net_device *dev, struct ethtool_stats *dummy,
 			   u64 *buf)
 {
-	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+	struct ctl_ehip_private *priv = netdev_priv(dev);
 	u64 ext;
 
 	ext = (u64) readl(&priv->eth_reconfig->txstat_frames_lessthan_64B_w_crcerr_high) << 32;
@@ -424,7 +425,7 @@ static void s10_100ghip_fill_stats(struct net_device *dev, struct ethtool_stats 
 	
 }
 
-static int s10_100ghip_sset_count(struct net_device *dev, int sset)
+static int ctl_ehip_sset_count(struct net_device *dev, int sset)
 {
 	switch (sset) {
 	case ETH_SS_STATS:
@@ -434,28 +435,28 @@ static int s10_100ghip_sset_count(struct net_device *dev, int sset)
 	}
 }
 
-static u32 s10_100ghip_get_msglevel(struct net_device *dev)
+static u32 ctl_ehip_get_msglevel(struct net_device *dev)
 {
-	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+	struct ctl_ehip_private *priv = netdev_priv(dev);
 	return priv->msg_enable;
 }
 
-static void s10_100ghip_set_msglevel(struct net_device *dev, uint32_t data)
+static void ctl_ehip_set_msglevel(struct net_device *dev, uint32_t data)
 {
-	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+	struct ctl_ehip_private *priv = netdev_priv(dev);
 	priv->msg_enable = data;
 }
 
-static int s10_100ghip_reglen(struct net_device *dev)
+static int ctl_ehip_reglen(struct net_device *dev)
 {
 	return S10_100GHIP_NUM_REGS * sizeof(u32);
 }
 
-static void s10_100ghip_get_regs(struct net_device *dev, struct ethtool_regs *regs,
+static void ctl_ehip_get_regs(struct net_device *dev, struct ethtool_regs *regs,
 			 void *regbuf)
 {
 	int i;
-	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+	struct ctl_ehip_private *priv = netdev_priv(dev);
 	u32 *buf = regbuf;
 
 	/* Set version to a known value, so ethtool knows
@@ -476,13 +477,13 @@ static void s10_100ghip_get_regs(struct net_device *dev, struct ethtool_regs *re
 		buf[i] = readl(&priv->eth_reconfig->rxstat_frames_lessthan_64B_w_crcerr_low + i * 4);
 }
 
-static u32 s10_100ghip_get_link(struct net_device *dev) {
-/*	struct altera_s10_100ghip_private *priv = netdev_priv(dev); */
+static u32 ctl_ehip_get_link(struct net_device *dev) {
+/*	struct ctl_ehip_private *priv = netdev_priv(dev); */
 	return 1;
 
 }
 
-static int s10_100ghip_get_link_ksettings(struct net_device *dev,
+static int ctl_ehip_get_link_ksettings(struct net_device *dev,
 										  struct ethtool_link_ksettings *link_ksettings)
 {
 	ethtool_link_ksettings_zero_link_mode(link_ksettings, supported);
@@ -499,12 +500,12 @@ static int s10_100ghip_get_link_ksettings(struct net_device *dev,
 
 	return 0;
 
-/*	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+/*	struct ctl_ehip_private *priv = netdev_priv(dev);
 
 	return phylink_ethtool_ksettings_get(priv->phy_link, link_ksettings);*/
 }
 
-static int s10_100ghip_set_link_ksettings(struct net_device *dev,
+static int ctl_ehip_set_link_ksettings(struct net_device *dev,
 										  const struct ethtool_link_ksettings *link_ksettings)
 {
 /*	link_ksettings->base.speed = SPEED_100000;
@@ -514,28 +515,28 @@ static int s10_100ghip_set_link_ksettings(struct net_device *dev,
 	return 0;
 
 /*
-	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+	struct ctl_ehip_private *priv = netdev_priv(dev);
 
 	return phylink_ethtool_ksettings_set(priv->phy_link, link_ksettings);
 */
 	
 }
 
-static const struct ethtool_ops s10_100ghip_ethtool_ops = {
-	.get_drvinfo 		= s10_100ghip_get_drvinfo,
-	.get_regs_len 		= s10_100ghip_reglen,
-	.get_regs 			= s10_100ghip_get_regs,
-	.get_link 			= s10_100ghip_get_link,
-	.get_strings 		= s10_100ghip_gstrings,
-	.get_sset_count 	= s10_100ghip_sset_count,
-	.get_ethtool_stats 	= s10_100ghip_fill_stats,
-	.get_msglevel 		= s10_100ghip_get_msglevel,
-	.set_msglevel 		= s10_100ghip_set_msglevel,
-	.get_link_ksettings = s10_100ghip_get_link_ksettings,
-	.set_link_ksettings = s10_100ghip_set_link_ksettings,
+static const struct ethtool_ops ctl_ehip_ethtool_ops = {
+	.get_drvinfo 		= ctl_ehip_get_drvinfo,
+	.get_regs_len 		= ctl_ehip_reglen,
+	.get_regs 			= ctl_ehip_get_regs,
+	.get_link 			= ctl_ehip_get_link,
+	.get_strings 		= ctl_ehip_gstrings,
+	.get_sset_count 	= ctl_ehip_sset_count,
+	.get_ethtool_stats 	= ctl_ehip_fill_stats,
+	.get_msglevel 		= ctl_ehip_get_msglevel,
+	.set_msglevel 		= ctl_ehip_set_msglevel,
+	.get_link_ksettings = ctl_ehip_get_link_ksettings,
+	.set_link_ksettings = ctl_ehip_set_link_ksettings,
 };
 
-void altera_s10_100ghip_set_ethtool_ops(struct net_device *netdev)
+void ctl_ehip_set_ethtool_ops(struct net_device *netdev)
 {
-	netdev->ethtool_ops = &s10_100ghip_ethtool_ops;
+	netdev->ethtool_ops = &ctl_ehip_ethtool_ops;
 }

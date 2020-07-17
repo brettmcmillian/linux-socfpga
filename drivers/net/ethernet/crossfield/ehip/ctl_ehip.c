@@ -1,12 +1,12 @@
 /*
- * Intel Stratix 10 100G Ethernet Hard IP Driver
+ * Crossfield Ethernet Hard IP Driver for Intel Stratix 10 100G eHIP
  * Copyright (C) 2020 Crossfield Technology LLC. All rights reserved.
  *
  * Contributors:
  *   Brett McMillian
  *
  * This driver is based on the Altera TSE driver and must be used
- * with the altera_s10_msgdma driver.
+ * with the ctl_ehip_dma driver.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,
@@ -42,8 +42,8 @@
 #include <linux/skbuff.h>
 #include <asm/cacheflush.h>
 
-#include "altera_s10_100ghip.h"
-#include "altera_s10_msgdma.h"
+#include "ctl_ehip.h"
+#include "ctl_ehip_dma.h"
 
 
 
@@ -80,15 +80,15 @@ MODULE_PARM_DESC(dma_tx_num, "Number of descriptors in the TX list");
 /* Allow network stack to resume queueing packets after we've
  * finished transmitting at least 1/4 of the packets in the queue.
  */
-#define S10_100GHIP_TX_THRESH(x)	(x->tx_ring_size / 4)
+#define CTL_EHIP_TX_THRESH(x)	(x->tx_ring_size / 4)
 
 #define TXQUEUESTOP_THRESHHOLD	2
 
-static const struct of_device_id altera_s10_100ghip_ids[];
+static const struct of_device_id ctl_ehip_ids[];
 
 
 
-static inline u32 s10_100ghip_tx_avail(struct altera_s10_100ghip_private *priv)
+static inline u32 ctl_ehip_tx_avail(struct ctl_ehip_private *priv)
 {
 	return priv->tx_cons + priv->tx_ring_size - priv->tx_prod - 1;
 }
@@ -96,26 +96,26 @@ static inline u32 s10_100ghip_tx_avail(struct altera_s10_100ghip_private *priv)
 /*
  * PCS Register read/write functions
  */
-static u16 s10_100ghip_pcs_read(struct altera_s10_100ghip_private *priv, int regnum)
+static u16 ctl_ehip_pcs_read(struct ctl_ehip_private *priv, int regnum)
 {
 	return 0x0;
 }
 
-static void s10_100ghip_pcs_write(struct altera_s10_100ghip_private *priv, int regnum,
+static void ctl_ehip_pcs_write(struct ctl_ehip_private *priv, int regnum,
 				u16 value)
 {
 
 }
 
 /* Check PCS scratch memory */
-static int s10_100ghip_pcs_scratch_test(struct altera_s10_100ghip_private *priv, u32 value)
+static int ctl_ehip_pcs_scratch_test(struct ctl_ehip_private *priv, u32 value)
 {
 	writel(value, &priv->eth_reconfig->phy_scratch);
 	return (readl(&priv->eth_reconfig->phy_scratch) == value);
 }
 
-static int s10_100ghip_init_rx_buffer(struct altera_s10_100ghip_private *priv,
-			      struct s10_100ghip_buffer *rxbuffer, int len)
+static int ctl_ehip_init_rx_buffer(struct ctl_ehip_private *priv,
+			      struct ctl_ehip_buffer *rxbuffer, int len)
 {
 	rxbuffer->skb = netdev_alloc_skb_ip_align(priv->dev, len);
 	if (!rxbuffer->skb)
@@ -135,8 +135,8 @@ static int s10_100ghip_init_rx_buffer(struct altera_s10_100ghip_private *priv,
 	return 0;
 }
 
-static void s10_100ghip_free_rx_buffer(struct altera_s10_100ghip_private *priv,
-			       struct s10_100ghip_buffer *rxbuffer)
+static void ctl_ehip_free_rx_buffer(struct ctl_ehip_private *priv,
+			       struct ctl_ehip_buffer *rxbuffer)
 {
 	struct sk_buff *skb = rxbuffer->skb;
 	dma_addr_t dma_addr = rxbuffer->dma_addr;
@@ -155,8 +155,8 @@ static void s10_100ghip_free_rx_buffer(struct altera_s10_100ghip_private *priv,
 /*
  * Unmap and free Tx buffer resources
  */
-static void s10_100ghip_free_tx_buffer(struct altera_s10_100ghip_private *priv,
-			       struct s10_100ghip_buffer *buffer)
+static void ctl_ehip_free_tx_buffer(struct ctl_ehip_private *priv,
+			       struct ctl_ehip_buffer *buffer)
 {
 	if (buffer->dma_addr) {
 		if (buffer->mapped_as_page)
@@ -173,7 +173,7 @@ static void s10_100ghip_free_tx_buffer(struct altera_s10_100ghip_private *priv,
 	}
 }
 
-static int alloc_init_skbufs(struct altera_s10_100ghip_private *priv)
+static int alloc_init_skbufs(struct ctl_ehip_private *priv)
 {
 	unsigned int rx_descs = priv->rx_ring_size;
 	unsigned int tx_descs = priv->tx_ring_size;
@@ -181,13 +181,13 @@ static int alloc_init_skbufs(struct altera_s10_100ghip_private *priv)
 	int i;
 
 	/* Create Rx ring buffer */
-	priv->rx_ring = kcalloc(rx_descs, sizeof(struct s10_100ghip_buffer),
+	priv->rx_ring = kcalloc(rx_descs, sizeof(struct ctl_ehip_buffer),
 				GFP_KERNEL);
 	if (!priv->rx_ring)
 		goto err_rx_ring;
 
 	/* Create Tx ring buffer */
-	priv->tx_ring = kcalloc(tx_descs, sizeof(struct s10_100ghip_buffer),
+	priv->tx_ring = kcalloc(tx_descs, sizeof(struct ctl_ehip_buffer),
 				GFP_KERNEL);
 	if (!priv->tx_ring)
 		goto err_tx_ring;
@@ -197,7 +197,7 @@ static int alloc_init_skbufs(struct altera_s10_100ghip_private *priv)
 
 	/* Init Rx ring */
 	for (i = 0; i < rx_descs; i++) {
-		ret = s10_100ghip_init_rx_buffer(priv, &priv->rx_ring[i],
+		ret = ctl_ehip_init_rx_buffer(priv, &priv->rx_ring[i],
 					 priv->rx_dma_buf_sz);
 		if (ret)
 			goto err_init_rx_buffers;
@@ -209,7 +209,7 @@ static int alloc_init_skbufs(struct altera_s10_100ghip_private *priv)
 	return 0;
 err_init_rx_buffers:
 	while (--i >= 0)
-		s10_100ghip_free_rx_buffer(priv, &priv->rx_ring[i]);
+		ctl_ehip_free_rx_buffer(priv, &priv->rx_ring[i]);
 	kfree(priv->tx_ring);
 err_tx_ring:
 	kfree(priv->rx_ring);
@@ -219,16 +219,16 @@ err_rx_ring:
 
 static void free_skbufs(struct net_device *dev)
 {
-	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+	struct ctl_ehip_private *priv = netdev_priv(dev);
 	unsigned int rx_descs = priv->rx_ring_size;
 	unsigned int tx_descs = priv->tx_ring_size;
 	int i;
 
 	/* Release the DMA TX/RX socket buffers */
 	for (i = 0; i < rx_descs; i++)
-		s10_100ghip_free_rx_buffer(priv, &priv->rx_ring[i]);
+		ctl_ehip_free_rx_buffer(priv, &priv->rx_ring[i]);
 	for (i = 0; i < tx_descs; i++)
-		s10_100ghip_free_tx_buffer(priv, &priv->tx_ring[i]);
+		ctl_ehip_free_tx_buffer(priv, &priv->tx_ring[i]);
 
 
 	kfree(priv->tx_ring);
@@ -236,7 +236,7 @@ static void free_skbufs(struct net_device *dev)
 
 /* Reallocate the skb for the reception process
  */
-static inline void s10_100ghip_rx_refill(struct altera_s10_100ghip_private *priv)
+static inline void ctl_ehip_rx_refill(struct ctl_ehip_private *priv)
 {
 	unsigned int rxsize = priv->rx_ring_size;
 	unsigned int entry;
@@ -246,7 +246,7 @@ static inline void s10_100ghip_rx_refill(struct altera_s10_100ghip_private *priv
 			priv->rx_prod++) {
 		entry = priv->rx_prod % rxsize;
 		if (likely(priv->rx_ring[entry].skb == NULL)) {
-			ret = s10_100ghip_init_rx_buffer(priv, &priv->rx_ring[entry],
+			ret = ctl_ehip_init_rx_buffer(priv, &priv->rx_ring[entry],
 				priv->rx_dma_buf_sz);
 			if (unlikely(ret != 0))
 				break;
@@ -257,7 +257,7 @@ static inline void s10_100ghip_rx_refill(struct altera_s10_100ghip_private *priv
 
 /* Pull out the VLAN tag and fix up the packet
  */
-static inline void s10_100ghip_rx_vlan(struct net_device *dev, struct sk_buff *skb)
+static inline void ctl_ehip_rx_vlan(struct net_device *dev, struct sk_buff *skb)
 {
 	struct ethhdr *eth_hdr;
 	u16 vid;
@@ -272,7 +272,7 @@ static inline void s10_100ghip_rx_vlan(struct net_device *dev, struct sk_buff *s
 
 /* Receive a packet: retrieve and pass over to upper levels
  */
-static int s10_100ghip_rx(struct altera_s10_100ghip_private *priv, int limit)
+static int ctl_ehip_rx(struct ctl_ehip_private *priv, int limit)
 {
 	unsigned int count = 0;
 	unsigned int next_entry;
@@ -334,7 +334,7 @@ static int s10_100ghip_rx(struct altera_s10_100ghip_private *priv, int limit)
 				       16, 1, skb->data, pktlength, true);
 		}
 
-		s10_100ghip_rx_vlan(priv->dev, skb);
+		ctl_ehip_rx_vlan(priv->dev, skb);
 
 		skb->protocol = eth_type_trans(skb, priv->dev);
 		skb_checksum_none_assert(skb);
@@ -346,7 +346,7 @@ static int s10_100ghip_rx(struct altera_s10_100ghip_private *priv, int limit)
 
 		entry = next_entry;
 
-		s10_100ghip_rx_refill(priv);
+		ctl_ehip_rx_refill(priv);
 	}
 
 	return count;
@@ -354,12 +354,12 @@ static int s10_100ghip_rx(struct altera_s10_100ghip_private *priv, int limit)
 
 /* Reclaim resources after transmission completes
  */
-static int s10_100ghip_tx_complete(struct altera_s10_100ghip_private *priv)
+static int ctl_ehip_tx_complete(struct ctl_ehip_private *priv)
 {
 	unsigned int txsize = priv->tx_ring_size;
 	u32 ready;
 	unsigned int entry;
-	struct s10_100ghip_buffer *tx_buff;
+	struct ctl_ehip_buffer *tx_buff;
 	int txcomplete = 0;
 
 	spin_lock(&priv->tx_lock);
@@ -378,7 +378,7 @@ static int s10_100ghip_tx_complete(struct altera_s10_100ghip_private *priv)
 		if (likely(tx_buff->skb))
 			priv->dev->stats.tx_packets++;
 
-		s10_100ghip_free_tx_buffer(priv, tx_buff);
+		ctl_ehip_free_tx_buffer(priv, tx_buff);
 		priv->tx_cons++;
 
 		txcomplete++;
@@ -386,9 +386,9 @@ static int s10_100ghip_tx_complete(struct altera_s10_100ghip_private *priv)
 	}
 
 	if (unlikely(netif_queue_stopped(priv->dev) &&
-		     s10_100ghip_tx_avail(priv) > S10_100GHIP_TX_THRESH(priv))) {
+		     ctl_ehip_tx_avail(priv) > CTL_EHIP_TX_THRESH(priv))) {
 		if (netif_queue_stopped(priv->dev) &&
-		    s10_100ghip_tx_avail(priv) > S10_100GHIP_TX_THRESH(priv)) {
+		    ctl_ehip_tx_avail(priv) > CTL_EHIP_TX_THRESH(priv)) {
 			if (netif_msg_tx_done(priv))
 				netdev_dbg(priv->dev, "%s: restart transmit\n",
 					   __func__);
@@ -404,16 +404,16 @@ static int s10_100ghip_tx_complete(struct altera_s10_100ghip_private *priv)
 /*
  * NAPI polling function
  */
-static int s10_100ghip_poll(struct napi_struct *napi, int budget)
+static int ctl_ehip_poll(struct napi_struct *napi, int budget)
 {
-	struct altera_s10_100ghip_private *priv =
-			container_of(napi, struct altera_s10_100ghip_private, napi);
+	struct ctl_ehip_private *priv =
+			container_of(napi, struct ctl_ehip_private, napi);
 	int rxcomplete = 0;
 	unsigned long int flags;
 
-	s10_100ghip_tx_complete(priv);
+	ctl_ehip_tx_complete(priv);
 
-	rxcomplete = s10_100ghip_rx(priv, budget);
+	rxcomplete = ctl_ehip_rx(priv, budget);
 
 	if (rxcomplete < budget) {
 
@@ -437,7 +437,7 @@ static int s10_100ghip_poll(struct napi_struct *napi, int budget)
 static irqreturn_t altera_isr(int irq, void *dev_id)
 {
 	struct net_device *dev = dev_id;
-	struct altera_s10_100ghip_private *priv;
+	struct ctl_ehip_private *priv;
 
 	if (unlikely(!dev)) {
 		pr_err("%s: invalid dev pointer\n", __func__);
@@ -463,18 +463,17 @@ static irqreturn_t altera_isr(int irq, void *dev_id)
 	return IRQ_HANDLED;
 }
 
-/* Transmit a packet (called by the kernel). Dispatches
- * the MSGDMA method, assumes no scatter/gather support,
- * implying an assumption that there's only one
- * physically contiguous fragment starting at
- * skb->data, for length of skb_headlen(skb).
+/* Transmit a packet (called by the kernel) using
+ * the Crossfield DMA engine. Implies an assumption
+ * that there's only one physically contiguous fragment
+ * starting at skb->data, for length of skb_headlen(skb).
  */
-static int s10_100ghip_start_xmit(struct sk_buff *skb, struct net_device *dev)
+static int ctl_ehip_start_xmit(struct sk_buff *skb, struct net_device *dev)
 {
-	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+	struct ctl_ehip_private *priv = netdev_priv(dev);
 	unsigned int txsize = priv->tx_ring_size;
 	unsigned int entry;
-	struct s10_100ghip_buffer *buffer = NULL;
+	struct ctl_ehip_buffer *buffer = NULL;
 	int nfrags = skb_shinfo(skb)->nr_frags;
 	unsigned int nopaged_len = skb_headlen(skb);
 	enum netdev_tx ret = NETDEV_TX_OK;
@@ -482,7 +481,7 @@ static int s10_100ghip_start_xmit(struct sk_buff *skb, struct net_device *dev)
 
 	spin_lock_bh(&priv->tx_lock);
 
-	if (unlikely(s10_100ghip_tx_avail(priv) < nfrags + 1)) {
+	if (unlikely(ctl_ehip_tx_avail(priv) < nfrags + 1)) {
 		if (!netif_queue_stopped(dev)) {
 			netif_stop_queue(dev);
 			/* This is a hard error, log it. */
@@ -517,7 +516,7 @@ static int s10_100ghip_start_xmit(struct sk_buff *skb, struct net_device *dev)
 	priv->tx_prod++;
 	dev->stats.tx_bytes += skb->len;
 
-	if (unlikely(s10_100ghip_tx_avail(priv) <= TXQUEUESTOP_THRESHHOLD)) {
+	if (unlikely(ctl_ehip_tx_avail(priv) <= TXQUEUESTOP_THRESHHOLD)) {
 		if (netif_msg_hw(priv))
 			netdev_dbg(priv->dev, "%s: stop transmitted packets\n",
 				   __func__);
@@ -537,9 +536,9 @@ out:
  * register values, and can bring down the device if needed.
  */
 /*
-static void altera_s10_100ghip_adjust_link(struct net_device *dev)
+static void ctl_ehip_adjust_link(struct net_device *dev)
 {
-	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+	struct ctl_ehip_private *priv = netdev_priv(dev);
 	struct phy_device *phydev = dev->phydev;
 
 	if (netif_msg_link(priv))
@@ -553,7 +552,7 @@ static struct phy_device *connect_local_phy(struct net_device *dev)
 }
 
 
-static int altera_s10_100ghip_phy_get_addr_mdio_create(struct net_device *dev)
+static int ctl_ehip_phy_get_addr_mdio_create(struct net_device *dev)
 {
 
 }
@@ -562,7 +561,7 @@ static int altera_s10_100ghip_phy_get_addr_mdio_create(struct net_device *dev)
 /* Setup PHYLINK to control the PHY through the MAC */
  
 
-static void altera_s10_100ghip_validate(struct net_device *dev, unsigned long *supported,
+static void ctl_ehip_validate(struct net_device *dev, unsigned long *supported,
 										struct phylink_link_state *state)
 {
 	__ETHTOOL_DECLARE_LINK_MODE_MASK(mask) = { 0, };
@@ -570,15 +569,15 @@ static void altera_s10_100ghip_validate(struct net_device *dev, unsigned long *s
 	phylink_set(mask, 100000baseSR4_Full);
 }
 
-static void altera_s10_100ghip_mac_config(struct net_device *dev, unsigned int mode,
+static void ctl_ehip_mac_config(struct net_device *dev, unsigned int mode,
 										 const struct phylink_link_state *state)
 {
 
 }
 
-static int altera_s10_100ghip_link_state(struct net_device *dev, struct phylink_link_state *state)
+static int ctl_ehip_link_state(struct net_device *dev, struct phylink_link_state *state)
 {
-	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+	struct ctl_ehip_private *priv = netdev_priv(dev);
 	u32 reg;
 
 	reg = readl(&priv->eth_reconfig->phy_tx_datapath_ready);
@@ -591,15 +590,15 @@ static int altera_s10_100ghip_link_state(struct net_device *dev, struct phylink_
 	return 0;
 }
 
-static void altera_s10_100ghip_mac_link_down(struct net_device *dev, unsigned int mode)
+static void ctl_ehip_mac_link_down(struct net_device *dev, unsigned int mode)
 {
 	netif_carrier_off(dev);
 }
 
-static void altera_s10_100ghip_mac_link_up(struct net_device *dev, unsigned int mode,
+static void ctl_ehip_mac_link_up(struct net_device *dev, unsigned int mode,
 											 struct phy_device *phy_dev)
 {
-		struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+		struct ctl_ehip_private *priv = netdev_priv(dev);
 	u32 reg;
 
 	reg = readl(&priv->eth_reconfig->phy_rx_pcs_status_for_anlt);
@@ -607,26 +606,26 @@ static void altera_s10_100ghip_mac_link_up(struct net_device *dev, unsigned int 
 	if (reg == 0x1)
 		netif_carrier_on(dev);
 	else
-		printk("altera_s10_100ghip: RX PCS is not aligned\n");
+		printk("ctl_ehip: RX PCS is not aligned\n");
 }
 
-static const struct phylink_mac_ops altera_s10_100ghip_phylink_ops = {
-	.validate		= altera_s10_100ghip_validate,
-	.mac_config		= altera_s10_100ghip_mac_config,
-	.mac_link_state	= altera_s10_100ghip_link_state,
-	.mac_link_up	= altera_s10_100ghip_mac_link_up,
-	.mac_link_down	= altera_s10_100ghip_mac_link_down,
+static const struct phylink_mac_ops ctl_ehip_phylink_ops = {
+	.validate		= ctl_ehip_validate,
+	.mac_config		= ctl_ehip_mac_config,
+	.mac_link_state	= ctl_ehip_link_state,
+	.mac_link_up	= ctl_ehip_mac_link_up,
+	.mac_link_down	= ctl_ehip_mac_link_down,
 };
 
 static int init_phy(struct net_device *dev)
 {
-	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+	struct ctl_ehip_private *priv = netdev_priv(dev);
 	struct phylink *phylink;
 	u32 reg;
 	int retries;
 	int tx_ready = 0, rx_ready = 0;
 
-/*	altera_s10_100ghip_xcvr_cal_check(priv); */
+/*	ctl_ehip_xcvr_cal_check(priv); */
 
 	for (retries=0; retries < 5; retries++) {
 		/* First check for tx_datapath_ready */
@@ -636,9 +635,9 @@ static int init_phy(struct net_device *dev)
 			tx_ready = 1;
 
 		if (tx_ready != 1) {
-			printk("altera_s10_100ghip: Resetting the 100G HIP core.\n");
+			printk("ctl_ehip: Resetting the 100G HIP core.\n");
 			if (retries == 4) {
-				printk("altera_s10_100ghip: Failed to bring up the interace.\n");
+				printk("ctl_ehip: Failed to bring up the interace.\n");
 				return -1;
 			}
 
@@ -659,9 +658,9 @@ static int init_phy(struct net_device *dev)
 			rx_ready = 1;
 
 		if (rx_ready != 1) {
-			printk("altera_s10_100ghip: Resetting the 100G HIP receiver.\n");
+			printk("ctl_ehip: Resetting the 100G HIP receiver.\n");
 			if (retries == 4) {
-				printk("altera_s10_100ghip: Failed to align the receiver.\n");
+				printk("ctl_ehip: Failed to align the receiver.\n");
 				return -2;
 			}
 
@@ -674,7 +673,7 @@ static int init_phy(struct net_device *dev)
 			break;
 	}
 
-	printk("altera_s10_100ghip: Interace is ready for link up.\n");
+	printk("ctl_ehip: Interace is ready for link up.\n");
 
 	reg = readl(&priv->eth_reconfig->anlt_sequencer_config);
     reg &= ~ANLT_SEQ_AN_TIMEOUT;
@@ -688,7 +687,7 @@ static int init_phy(struct net_device *dev)
 	priv->oldspeed = 0;
 	priv->oldduplex = -1;
 
-	phylink = phylink_create(dev, priv->device->of_node, priv->phy_iface, &altera_s10_100ghip_phylink_ops);
+	phylink = phylink_create(dev, priv->device->of_node, priv->phy_iface, &ctl_ehip_phylink_ops);
 
 	if (phylink == NULL) {
 		netdev_err(dev, "could not create phylink.\n");
@@ -702,7 +701,7 @@ static int init_phy(struct net_device *dev)
 	return 0;
 }
 
-static void s10_100ghip_update_mac_addr(struct altera_s10_100ghip_private *priv, u8 *addr)
+static void ctl_ehip_update_mac_addr(struct ctl_ehip_private *priv, u8 *addr)
 {
 	u32 msb;
 	u32 lsb;
@@ -727,7 +726,7 @@ static void s10_100ghip_update_mac_addr(struct altera_s10_100ghip_private *priv,
  * receive logic, flushes the receive FIFO buffer, and resets the statistics
  * counters.
  */
-static int reset_mac(struct altera_s10_100ghip_private *priv)
+static int reset_mac(struct ctl_ehip_private *priv)
 {
 /*	For now don't issue resets.
 */
@@ -737,19 +736,19 @@ static int reset_mac(struct altera_s10_100ghip_private *priv)
 
 /* Initialize MAC core registers
 */
-static int init_mac(struct altera_s10_100ghip_private *priv)
+static int init_mac(struct ctl_ehip_private *priv)
 {
 /*	Let the MAC come up in the default state and update the MAC address.
 */
 
-	s10_100ghip_update_mac_addr(priv, priv->dev->dev_addr);
+	ctl_ehip_update_mac_addr(priv, priv->dev->dev_addr);
 
 	return 0;
 }
 
 /* Start/stop MAC transmission logic
  */
-static void s10_100ghip_set_mac(struct altera_s10_100ghip_private *priv, bool enable)
+static void ctl_ehip_set_mac(struct ctl_ehip_private *priv, bool enable)
 {
 	u32 reg;
 	reg = readl(&priv->eth_reconfig->txmac_config);
@@ -764,7 +763,7 @@ static void s10_100ghip_set_mac(struct altera_s10_100ghip_private *priv, bool en
 
 /* Change the MTU
  */
-static int s10_100ghip_change_mtu(struct net_device *dev, int new_mtu)
+static int ctl_ehip_change_mtu(struct net_device *dev, int new_mtu)
 {
 	if (netif_running(dev)) {
 		netdev_err(dev, "must be stopped to change its MTU\n");
@@ -779,7 +778,7 @@ static int s10_100ghip_change_mtu(struct net_device *dev, int new_mtu)
 
 /* Set or clear the multicast filter for this adaptor
  */
-static void s10_100ghip_set_rx_mode(struct net_device *dev)
+static void ctl_ehip_set_rx_mode(struct net_device *dev)
 {
 
 }
@@ -789,11 +788,11 @@ static void s10_100ghip_set_rx_mode(struct net_device *dev)
 static int init_100ghip_pcs(struct net_device *dev)
 {
 	//For now, just let the PCS come up in the default state.
-	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+	struct ctl_ehip_private *priv = netdev_priv(dev);
 
-	if (s10_100ghip_pcs_scratch_test(priv, 0x00000000) &&
-		s10_100ghip_pcs_scratch_test(priv, 0xFFFFFFFF) &&
-		s10_100ghip_pcs_scratch_test(priv, 0xa5a5a5a5)) {
+	if (ctl_ehip_pcs_scratch_test(priv, 0x00000000) &&
+		ctl_ehip_pcs_scratch_test(priv, 0xFFFFFFFF) &&
+		ctl_ehip_pcs_scratch_test(priv, 0xa5a5a5a5)) {
 		netdev_info(dev, "PHY scratch memory test succeeded.\n");
 	} else {
 		netdev_err(dev, "PHY scratch memory test failed.\n");
@@ -803,13 +802,13 @@ static int init_100ghip_pcs(struct net_device *dev)
 	return 0;
 }
 
-static int s10_100ghip_do_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
+static int ctl_ehip_do_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
 {
-/*	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+/*	struct ctl_ehip_private *priv = netdev_priv(dev);
 
 	switch (cmd) {
 		case SIOREGDUMP:
-			altera_s10_100ghip_regdump(priv);
+			ctl_ehip_regdump(priv);
 			return 0;
 		default:
 			return -EOPNOTSUPP;
@@ -820,9 +819,9 @@ static int s10_100ghip_do_ioctl(struct net_device *dev, struct ifreq *ifr, int c
 
 /* Open and initialize the interface
  */
-static int s10_100ghip_open(struct net_device *dev)
+static int ctl_ehip_open(struct net_device *dev)
 {
-	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+	struct ctl_ehip_private *priv = netdev_priv(dev);
 	int ret = 0;
 	int i;
 	unsigned long int flags;
@@ -917,7 +916,7 @@ static int s10_100ghip_open(struct net_device *dev)
 
 	/* Start MAC Rx/Tx */
 	spin_lock(&priv->mac_cfg_lock);
-	s10_100ghip_set_mac(priv, true);
+	ctl_ehip_set_mac(priv, true);
 	spin_unlock(&priv->mac_cfg_lock);
 
 	return 0;
@@ -933,9 +932,9 @@ phy_error:
 
 /* Stop 100G HIP MAC interface and put the device in an inactive state
  */
-static int s10_100ghip_shutdown(struct net_device *dev)
+static int ctl_ehip_shutdown(struct net_device *dev)
 {
-	struct altera_s10_100ghip_private *priv = netdev_priv(dev);
+	struct ctl_ehip_private *priv = netdev_priv(dev);
 	int ret;
 	unsigned long int flags;
 
@@ -977,14 +976,14 @@ static int s10_100ghip_shutdown(struct net_device *dev)
 	return 0;
 }
 
-static struct net_device_ops altera_s10_100ghip_netdev_ops = {
-	.ndo_open			= s10_100ghip_open,
-	.ndo_stop			= s10_100ghip_shutdown,
-	.ndo_start_xmit		= s10_100ghip_start_xmit,
-	.ndo_set_rx_mode	= s10_100ghip_set_rx_mode,
-	.ndo_change_mtu		= s10_100ghip_change_mtu,
+static struct net_device_ops ctl_ehip_netdev_ops = {
+	.ndo_open			= ctl_ehip_open,
+	.ndo_stop			= ctl_ehip_shutdown,
+	.ndo_start_xmit		= ctl_ehip_start_xmit,
+	.ndo_set_rx_mode	= ctl_ehip_set_rx_mode,
+	.ndo_change_mtu		= ctl_ehip_change_mtu,
 	.ndo_validate_addr	= eth_validate_addr,
-	.ndo_do_ioctl		= s10_100ghip_do_ioctl,
+	.ndo_do_ioctl		= ctl_ehip_do_ioctl,
 };
 
 /* Map a memory region based on resource name
@@ -1022,7 +1021,7 @@ static int request_and_map(struct platform_device *pdev, const char *name,
 
 /* Probe Intel 100G HIP MAC device
  */
-static int altera_s10_100ghip_probe(struct platform_device *pdev)
+static int ctl_ehip_probe(struct platform_device *pdev)
 {
 	struct net_device *ndev;
 	int ret = -ENODEV;
@@ -1030,11 +1029,11 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 	struct resource *xcvr_reconfig0, *xcvr_reconfig1, *xcvr_reconfig2, *xcvr_reconfig3;
 	struct resource *sysid;
 	struct resource *dma_res;
-	struct altera_s10_100ghip_private *priv;
+	struct ctl_ehip_private *priv;
 	const unsigned char *macaddr;
 	const struct of_device_id *of_id = NULL;
 
-	ndev = alloc_etherdev(sizeof(struct altera_s10_100ghip_private));
+	ndev = alloc_etherdev(sizeof(struct ctl_ehip_private));
 	if (!ndev) {
 		dev_err(&pdev->dev, "Could not allocate network device\n");
 		return -ENODEV;
@@ -1047,13 +1046,13 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 	priv->dev = ndev;
 	priv->msg_enable = netif_msg_init(debug, default_msg_level);
 
-	of_id = of_match_device(altera_s10_100ghip_ids, &pdev->dev);
+	of_id = of_match_device(ctl_ehip_ids, &pdev->dev);
 
 	if (of_id)
 		priv->dmaops = (struct altera_dmaops *)of_id->data;
 
 	if (priv->dmaops &&
-		   priv->dmaops->altera_dtype == ALTERA_DTYPE_S10_MSGDMA) {
+		   priv->dmaops->altera_dtype == CROSSFIELD_DTYPE_EHIP_DMA) {
 		ret = request_and_map(pdev, "rx_resp", &dma_res,
 				      (void __iomem **)&priv->rx_dma_resp);
 		if (ret)
@@ -1195,16 +1194,16 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 		eth_hw_addr_random(ndev);
 
 	/* Check the mSGDMA Component Configuration Registers */
-	s10_msgdma_check(priv);
+	ctl_ehip_dma_check(priv);
 
 	/* initialize netdev */
 	ndev->mem_start = eth_reconfig->start;
 	ndev->mem_end = eth_reconfig->end;
-	ndev->netdev_ops = &altera_s10_100ghip_netdev_ops;
+	ndev->netdev_ops = &ctl_ehip_netdev_ops;
 	
-	altera_s10_100ghip_set_ethtool_ops(ndev);
+	ctl_ehip_set_ethtool_ops(ndev);
 
-	altera_s10_100ghip_netdev_ops.ndo_set_rx_mode = s10_100ghip_set_rx_mode;
+	ctl_ehip_netdev_ops.ndo_set_rx_mode = ctl_ehip_set_rx_mode;
 
 	/* Scatter/gather IO is not supported,
 	 * so it is turned off
@@ -1219,7 +1218,7 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 	ndev->features |= NETIF_F_HW_VLAN_CTAG_RX;
 
 	/* setup NAPI interface */
-	netif_napi_add(ndev, &priv->napi, s10_100ghip_poll, NAPI_POLL_WEIGHT);
+	netif_napi_add(ndev, &priv->napi, ctl_ehip_poll, NAPI_POLL_WEIGHT);
 
 	spin_lock_init(&priv->mac_cfg_lock);
 	spin_lock_init(&priv->tx_lock);
@@ -1250,7 +1249,7 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 	}
 
 	/* Check to make sure the core is ready */
-    altera_s10_100ghip_regdump(priv);
+    ctl_ehip_regdump(priv);
 
 	return 0;
 
@@ -1263,12 +1262,12 @@ err_free_netdev:
 	return ret;
 }
 
-/* Remove Altera 100G HIP MAC device
+/* Remove the device driver
  */
-static int altera_s10_100ghip_remove(struct platform_device *pdev)
+static int ctl_ehip_remove(struct platform_device *pdev)
 {
 	struct net_device *ndev = platform_get_drvdata(pdev);
-	struct altera_s10_100ghip_private *priv = netdev_priv(ndev);
+	struct ctl_ehip_private *priv = netdev_priv(ndev);
 
 	if (ndev->phydev) {
 		phy_disconnect(ndev->phydev);
@@ -1286,44 +1285,44 @@ static int altera_s10_100ghip_remove(struct platform_device *pdev)
 
 
 
-static const struct altera_dmaops altera_dtype_s10_msgdma = {
-	.altera_dtype = ALTERA_DTYPE_S10_MSGDMA,
+static const struct crossfield_dmaops ctl_dtype_ehip_dma = {
+	.crossfield_dtype = CROSSFIELD_DTYPE_EHIP_DMA,
 	.dmamask = 33, /* 64 -BJM switch to 33-bit mask */
-	.reset_dma = s10_msgdma_reset,
-	.enable_txirq = s10_msgdma_enable_txirq,
-	.enable_rxirq = s10_msgdma_enable_rxirq,
-	.disable_txirq = s10_msgdma_disable_txirq,
-	.disable_rxirq = s10_msgdma_disable_rxirq,
-	.clear_txirq = s10_msgdma_clear_txirq,
-	.clear_rxirq = s10_msgdma_clear_rxirq,
-	.tx_buffer = s10_msgdma_tx_buffer,
-	.tx_completions = s10_msgdma_tx_completions,
-	.add_rx_desc = s10_msgdma_add_rx_desc,
-	.get_rx_status = s10_msgdma_rx_status,
-	.init_dma = s10_msgdma_initialize,
-	.uninit_dma = s10_msgdma_uninitialize,
-	.start_rxdma = s10_msgdma_start_rxdma,
+	.reset_dma = ctl_ehip_dma_reset,
+	.enable_txirq = ctl_ehip_dma_enable_txirq,
+	.enable_rxirq = ctl_ehip_dma_enable_rxirq,
+	.disable_txirq = ctl_ehip_dma_disable_txirq,
+	.disable_rxirq = ctl_ehip_dma_disable_rxirq,
+	.clear_txirq = ctl_ehip_dma_clear_txirq,
+	.clear_rxirq = ctl_ehip_dma_clear_rxirq,
+	.tx_buffer = ctl_ehip_dma_tx_buffer,
+	.tx_completions = ctl_ehip_dma_tx_completions,
+	.add_rx_desc = ctl_ehip_dma_add_rx_desc,
+	.get_rx_status = ctl_ehip_dma_rx_status,
+	.init_dma = ctl_ehip_dma_initialize,
+	.uninit_dma = ctl_ehip_dma_uninitialize,
+	.start_rxdma = ctl_ehip_dma_start_rxdma,
 };
 
-static const struct of_device_id altera_s10_100ghip_ids[] = {
-	{ .compatible = "altr,s10-100ghip-msgdma-1.0", .data = &altera_dtype_s10_msgdma, },
+static const struct of_device_id ctl_ehip_ids[] = {
+	{ .compatible = "crossfield,ehip-dma-1.0", .data = &ctl_dtype_ehip_dma, },
 	{},
 };
-MODULE_DEVICE_TABLE(of, altera_s10_100ghip_ids);
+MODULE_DEVICE_TABLE(of, ctl_ehip_ids);
 
-static struct platform_driver altera_s10_100ghip_driver = {
-	.probe		= altera_s10_100ghip_probe,
-	.remove		= altera_s10_100ghip_remove,
+static struct platform_driver ctl_ehip_driver = {
+	.probe		= ctl_ehip_probe,
+	.remove		= ctl_ehip_remove,
 	.suspend	= NULL,
 	.resume		= NULL,
 	.driver		= {
-		.name	= ALTERA_S10_100GHIP_RESOURCE_NAME,
-		.of_match_table = altera_s10_100ghip_ids,
+		.name	= CTL_EHIP_RESOURCE_NAME,
+		.of_match_table = ctl_ehip_ids,
 	},
 };
 
-module_platform_driver(altera_s10_100ghip_driver);
+module_platform_driver(ctl_ehip_driver);
 
 MODULE_AUTHOR("Crossfield Technology");
-MODULE_DESCRIPTION("Intel Stratix 10 100G Ethernet HIP Driver");
+MODULE_DESCRIPTION("Crossfield Ethernet Hard IP Driver for Intel FPGA SoCs");
 MODULE_LICENSE("GPL v2");
