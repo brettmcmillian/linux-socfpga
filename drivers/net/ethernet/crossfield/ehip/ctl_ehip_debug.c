@@ -41,7 +41,7 @@
 #include <linux/skbuff.h>
 #include <asm/cacheflush.h>
 
-#include "ctl_hip.h"
+#include "ctl_ehip.h"
 
 static void ctl_ehip_anlt_regdump(struct ctl_ehip_private *priv)
 {
