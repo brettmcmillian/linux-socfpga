@@ -108,7 +108,7 @@ static char const stat_gstrings[][ETH_GSTRING_LEN] = {
 	"rx_frames_w_bad_length_type",
 };
 
-static void ehip_get_drvinfo(struct net_device *dev,
+static void ctl_ehip_get_drvinfo(struct net_device *dev,
 			    struct ethtool_drvinfo *info)
 {
 	struct ctl_ehip_private *priv = netdev_priv(dev);
