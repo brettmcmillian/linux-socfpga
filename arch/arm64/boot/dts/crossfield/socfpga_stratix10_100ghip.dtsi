@@ -558,8 +558,8 @@
 				interrupt-names = "rx_irq", "tx_irq";
 				resets = <&rst LWHPS2FPGA_RESET>;
 				clocks = <&clkmgr STRATIX10_L4_MAIN_CLK>;
-				rx-fifo-depth = <8192>;
-				tx-fifo-depth = <8192>;
+				rx-fifo-depth = <2048>;
+				tx-fifo-depth = <2048>;
 				address-bits = <48>;
 				max-frame-size = <1518>;
 				local-mac-address = [00 00 00 00 00 00];

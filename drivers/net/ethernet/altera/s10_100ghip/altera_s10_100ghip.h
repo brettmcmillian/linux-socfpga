@@ -381,6 +381,7 @@ struct altera_s10_100ghip_ethreconfig {
 	u32 txstat_frames_w_bad_length_type_low;
 	u32 txstat_frames_w_bad_length_type_high;
 	
+	u32 txstat_padding[150];
 
 	/* RX Statistics Counter registers begin at offset 0x900 double words */
 	u32 rxstat_frames_lessthan_64B_w_crcerr_low;

@@ -298,6 +298,10 @@ static int s10_100ghip_rx(struct altera_s10_100ghip_private *priv, int limit)
 				   pktstatus, pktlength);
 			break;
 		}
+//		else
+//		{
+//			printk("Received a packet of length 0x%08X.\n", pktlength);
+//		}
 
 		/* DMA transfer from 100G HIP starts with 2 aditional bytes for
 		 * IP payload alignment. Status returned by get_rx_status()
@@ -1075,6 +1079,12 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 		goto err_free_netdev;
 	}
 
+	if (dma_set_mask(priv->device, DMA_BIT_MASK(priv->dmaops->dmamask))) {
+		netdev_warn(ndev, ": %d-bit DMA addressing is not supported");
+		goto err_free_netdev;
+	}
+
+	/*
 	if (!dma_set_mask(priv->device, DMA_BIT_MASK(priv->dmaops->dmamask)))
 		dma_set_coherent_mask(priv->device,
 				      DMA_BIT_MASK(priv->dmaops->dmamask));
@@ -1082,6 +1092,7 @@ static int altera_s10_100ghip_probe(struct platform_device *pdev)
 		dma_set_coherent_mask(priv->device, DMA_BIT_MASK(32));
 	else
 		goto err_free_netdev;
+	*/
 
 	/* Reconfiguration address space */
 	ret = request_and_map(pdev, "eth_reconfig", &eth_reconfig,
@@ -1277,7 +1288,7 @@ static int altera_s10_100ghip_remove(struct platform_device *pdev)
 
 static const struct altera_dmaops altera_dtype_s10_msgdma = {
 	.altera_dtype = ALTERA_DTYPE_S10_MSGDMA,
-	.dmamask = 64,
+	.dmamask = 33, /* 64 -BJM switch to 33-bit mask */
 	.reset_dma = s10_msgdma_reset,
 	.enable_txirq = s10_msgdma_enable_txirq,
 	.enable_rxirq = s10_msgdma_enable_rxirq,
