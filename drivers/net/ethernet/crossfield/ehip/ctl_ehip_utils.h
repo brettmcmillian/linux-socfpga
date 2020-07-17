@@ -1,4 +1,4 @@
-/* Altera TSE SGDMA and MSGDMA Linux driver
+/* Crossfield eHIP DMA Driver for Intel FPGA SoCs
  * Copyright (C) 2014 Altera Corporation. All rights reserved
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -16,12 +16,12 @@
 
 #include <linux/kernel.h>
 
-#ifndef __ALTERA_S10_UTILS_H__
-#define __ALTERA_S10_UTILS_H__
+#ifndef __CTL_EHIP_UTILS_H__
+#define __CTL_EHIP_UTILS_H__
 
-void s10_set_bit(void __iomem *ioaddr, u32 bit_mask);
-void s10_clear_bit(void __iomem *ioaddr, u32 bit_mask);
-int s10_bit_is_set(void __iomem *ioaddr, u32 bit_mask);
-int s10_bit_is_clear(void __iomem *ioaddr, u32 bit_mask);
+void ctl_ehip_set_bit(void __iomem *ioaddr, u32 bit_mask);
+void ctl_ehip_clear_bit(void __iomem *ioaddr, u32 bit_mask);
+int ctl_ehip_bit_is_set(void __iomem *ioaddr, u32 bit_mask);
+int ctl_ehip_bit_is_clear(void __iomem *ioaddr, u32 bit_mask);
 
-#endif /* __ALTERA_S10_UTILS_H__*/
+#endif /* __CTL_EHIP_UTILS_H__*/

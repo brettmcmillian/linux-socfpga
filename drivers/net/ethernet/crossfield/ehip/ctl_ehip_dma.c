@@ -177,13 +177,9 @@ void ctl_ehip_dma_clear_txirq(struct ctl_ehip_private *priv)
 /* return 0 to indicate transmit is pending */
 int ctl_ehip_dma_tx_buffer(struct ctl_ehip_private *priv, struct ctl_ehip_buffer *buffer)
 {
-	writel(lower_32_bits(buffer->dma_addr), &priv->tx_dma_desc->read_addr_lo);
-	writel(upper_32_bits(buffer->dma_addr), &priv->tx_dma_desc->read_addr_hi);
-	writel(0, &priv->tx_dma_desc->write_addr_lo);
-	writel(0, &priv->tx_dma_desc->write_addr_lo);
-	writel(buffer->len, &priv->tx_dma_desc->len);
-	writel(0, &priv->tx_dma_desc->burst_seq_num);
-	writel(EHIP_DMA_DESC_TX_STRIDE, &priv->tx_dma_desc->stride);
+	writel(lower_32_bits(buffer->dma_addr), &priv->tx_dma_desc->addr32);
+	writel(upper_32_bits(buffer->dma_addr), &priv->tx_dma_desc->addr64);
+	writel(buffer->len, &priv->tx_dma_desc->length);
 	writel(EHIP_DMA_DESC_CTL_TX_SINGLE, &priv->tx_dma_desc->control);
 	return 0;
 }
@@ -225,13 +221,9 @@ void ctl_ehip_dma_add_rx_desc(struct ctl_ehip_private *priv,
 			| EHIP_DMA_DESC_CTL_TR_ERR_IRQ
 			| EHIP_DMA_DESC_CTL_GO);
 
-	writel(0, &priv->rx_dma_desc->read_addr_lo);
-	writel(0, &priv->rx_dma_desc->read_addr_hi);
-	writel(lower_32_bits(dma_addr), &priv->rx_dma_desc->write_addr_lo);
-	writel(upper_32_bits(dma_addr), &priv->rx_dma_desc->write_addr_hi);
-	writel(len, &priv->rx_dma_desc->len);
-	writel(0, &priv->rx_dma_desc->burst_seq_num);
-	writel(EHIP_DMA_DESC_TX_STRIDE, &priv->rx_dma_desc->stride);
+	writel(lower_32_bits(dma_addr), &priv->rx_dma_desc->addr32);
+	writel(upper_32_bits(dma_addr), &priv->rx_dma_desc->addr64);
+	writel(len, &priv->rx_dma_desc->length);
 	writel(control, &priv->rx_dma_desc->control);
 }
 
