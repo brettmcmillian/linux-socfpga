@@ -429,7 +429,7 @@ static int ctl_ehip_sset_count(struct net_device *dev, int sset)
 {
 	switch (sset) {
 	case ETH_SS_STATS:
-		return S10_100GHIP_STATS_LEN;
+		return EHIP_STATS_LEN;
 	default:
 		return -EOPNOTSUPP;
 	}
@@ -449,7 +449,7 @@ static void ctl_ehip_set_msglevel(struct net_device *dev, uint32_t data)
 
 static int ctl_ehip_reglen(struct net_device *dev)
 {
-	return S10_100GHIP_NUM_REGS * sizeof(u32);
+	return EHIP_NUM_REGS * sizeof(u32);
 }
 
 static void ctl_ehip_get_regs(struct net_device *dev, struct ethtool_regs *regs,
@@ -470,10 +470,10 @@ static void ctl_ehip_get_regs(struct net_device *dev, struct ethtool_regs *regs,
 
 	regs->version = 1;
 
-	for (i = 0; i < S10_100GHIP_NUM_REGS/2; i++)
+	for (i = 0; i < EHIP_NUM_REGS/2; i++)
 		buf[i] = readl(&priv->eth_reconfig->txstat_frames_lessthan_64B_w_crcerr_low + i * 4);
 
-	for (i = S10_100GHIP_NUM_REGS/2; i < S10_100GHIP_NUM_REGS; i++)
+	for (i = EHIP_NUM_REGS/2; i < EHIP_NUM_REGS; i++)
 		buf[i] = readl(&priv->eth_reconfig->rxstat_frames_lessthan_64B_w_crcerr_low + i * 4);
 }
 
