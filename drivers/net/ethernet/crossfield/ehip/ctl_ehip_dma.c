@@ -105,14 +105,14 @@ void ctl_ehip_dma_reset(struct ctl_ehip_private *priv)
 	writel(EHIP_DMA_CSR_CTL_RESET, &priv->rx_dma_csr->control);
 
 	counter = 0;
-	while (counter++ < ALTERA_S10_100GHIP_SW_RESET_WATCHDOG_CNTR) {
+	while (counter++ < CTL_EHIP_SW_RESET_WATCHDOG_CNTR) {
 		if (ctl_ehip_bit_is_clear(&priv->rx_dma_csr->status,
 				     EHIP_DMA_CSR_STAT_RESETTING))
 			break;
 		udelay(1);
 	}
 
-	if (counter >= ALTERA_S10_100GHIP_SW_RESET_WATCHDOG_CNTR)
+	if (counter >= CTL_EHIP_SW_RESET_WATCHDOG_CNTR)
 		netif_warn(priv, drv, priv->dev,
 			   "Crossfield eHIP DMA RX resetting bit never cleared!\n");
 
@@ -125,14 +125,14 @@ void ctl_ehip_dma_reset(struct ctl_ehip_private *priv)
 	writel(EHIP_DMA_CSR_CTL_RESET, &priv->tx_dma_csr->control);
 
 	counter = 0;
-	while (counter++ < ALTERA_S10_100GHIP_SW_RESET_WATCHDOG_CNTR) {
+	while (counter++ < CTL_EHIP_SW_RESET_WATCHDOG_CNTR) {
 		if (ctl_ehip_bit_is_clear(&priv->tx_dma_csr->status,
 				     EHIP_DMA_CSR_STAT_RESETTING))
 			break;
 		udelay(1);
 	}
 
-	if (counter >= ALTERA_S10_100GHIP_SW_RESET_WATCHDOG_CNTR)
+	if (counter >= CTL_EHIP_SW_RESET_WATCHDOG_CNTR)
 		netif_warn(priv, drv, priv->dev,
 			   "Crossfield eHIP DMA TX resetting bit never cleared!\n");
 

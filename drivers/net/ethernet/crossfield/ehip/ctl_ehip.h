@@ -38,9 +38,8 @@
 #define RX_MAC_CSR_OFFSET = 0x1400 /* (0x500 word offset) */
 
 #define CTL_EHIP_SW_RESET_WATCHDOG_CNTR	10000
-#define CTL_EHIP_MAC_FIFO_WIDTH		4	/* TX/RX FIFO width in
-							 * bytes
-							 */
+/* TX/RX FIFO width in bytes */
+#define CTL_EHIP_MAC_FIFO_WIDTH		4	
 /* Rx FIFO default settings */
 #define CTL_EHIP_RX_SECTION_EMPTY	16
 #define CTL_EHIP_RX_SECTION_FULL	0

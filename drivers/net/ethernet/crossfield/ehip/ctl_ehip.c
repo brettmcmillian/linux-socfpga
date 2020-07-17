@@ -1193,7 +1193,7 @@ static int ctl_ehip_probe(struct platform_device *pdev)
 	else
 		eth_hw_addr_random(ndev);
 
-	/* Check the mSGDMA Component Configuration Registers */
+	/* Check the eHIP DMA Component Configuration Registers */
 	ctl_ehip_dma_check(priv);
 
 	/* initialize netdev */
@@ -1287,7 +1287,7 @@ static int ctl_ehip_remove(struct platform_device *pdev)
 
 static const struct crossfield_dmaops ctl_dtype_ehip_dma = {
 	.crossfield_dtype = CROSSFIELD_DTYPE_EHIP_DMA,
-	.dmamask = 33, /* 64 -BJM switch to 33-bit mask */
+	.dmamask = 32,
 	.reset_dma = ctl_ehip_dma_reset,
 	.enable_txirq = ctl_ehip_dma_enable_txirq,
 	.enable_rxirq = ctl_ehip_dma_enable_rxirq,
