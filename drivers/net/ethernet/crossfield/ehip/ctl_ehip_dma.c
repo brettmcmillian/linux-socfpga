@@ -40,11 +40,47 @@ void ctl_ehip_dma_uninitialize(struct ctl_ehip_private *priv)
 
 void ctl_ehip_dma_start_rxdma(struct ctl_ehip_private *priv)
 {
+	int counter;
+
+	counter = 0;
+	while (counter++ < EHIP_DMA_SW_START_WATCHDOG_CNTR) {
+		if (ctl_ehip_bit_is_clear(priv->rx_dma_csr,
+			RX_EHIP_DMA_CSR_BUSY_MASK))
+			break;
+		udelay(1);
+	}
+
+	if (counter >= EHIP_DMA_SW_START_WATCHDOG_CNTR)
+		netif_warn(priv, drv, priv->dev,
+			   "RX eHIP DMA is busy! Unable to start.\n");
+
+	ctl_ehip_clear_bit(&priv->rx_dma_csr->start,
+			RX_EHIP_DMA_CSR_START_MASK);
+}
+
+void ctl_ehip_dma_start_txdma(struct ctl_ehip_private *priv)
+{
+	int counter;
+
+	counter = 0;
+	while (counter++ < EHIP_DMA_SW_START_WATCHDOG_CNTR) {
+		if (ctl_ehip_bit_is_clear(priv->tx_dma_csr,
+			TX_EHIP_DMA_CSR_BUSY_MASK))
+			break;
+		udelay(1);
+	}
+
+	if (counter >= EHIP_DMA_SW_START_WATCHDOG_CNTR)
+		netif_warn(priv, drv, priv->dev,
+			   "TX eHIP DMA is busy! Unable to start.\n");
+
+	ctl_ehip_clear_bit(&priv->tx_dma_csr->start,
+			TX_EHIP_DMA_CSR_START_MASK);
 }
 
 void ctl_ehip_dma_reset(struct ctl_ehip_private *priv)
 {
-	
+	//No software reset for HLS core
 }
 
 void ctl_ehip_dma_disable_rxirq(struct ctl_ehip_private *priv)

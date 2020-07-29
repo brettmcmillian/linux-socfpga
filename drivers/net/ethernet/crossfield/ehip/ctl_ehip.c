@@ -427,6 +427,8 @@ static int ctl_ehip_poll(struct napi_struct *napi, int budget)
 		priv->dmaops->enable_rxirq(priv);
 		priv->dmaops->enable_txirq(priv);
 		spin_unlock_irqrestore(&priv->rxdma_irq_lock, flags);
+		priv->dmaops->start_rxdma(priv);
+		priv->dmaops->start_txdma(priv);
 	}
 	return rxcomplete;
 }
@@ -865,7 +867,7 @@ static int ctl_ehip_open(struct net_device *dev)
 		goto alloc_skbuf_error;
 	}
 
-	priv->dmaops->reset_dma(priv);
+	//priv->dmaops->reset_dma(priv);
 
 	/* Create and initialize the TX/RX descriptors chains. */
 	priv->rx_ring_size = dma_rx_num;
@@ -913,6 +915,7 @@ static int ctl_ehip_open(struct net_device *dev)
 	netif_start_queue(dev);
 
 	priv->dmaops->start_rxdma(priv);
+	priv->dmaops->start_txdma(priv);
 
 	/* Start MAC Rx/Tx */
 	spin_lock(&priv->mac_cfg_lock);
@@ -1299,6 +1302,7 @@ static const struct crossfield_dmaops ctl_dtype_ehip_dma = {
 	.init_dma = ctl_ehip_dma_initialize,
 	.uninit_dma = ctl_ehip_dma_uninitialize,
 	.start_rxdma = ctl_ehip_dma_start_rxdma,
+	.start_txdma = ctl_ehip_dma_start_txdma,
 };
 
 static const struct of_device_id ctl_ehip_ids[] = {

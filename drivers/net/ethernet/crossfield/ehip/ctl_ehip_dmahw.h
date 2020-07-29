@@ -83,6 +83,8 @@ struct ehip_dma_response {
 				 */
 };
 
+#define EHIP_DMA_SW_START_WATCHDOG_CNTR 10000
+
 #define ehip_dma_respoffs(a) (offsetof(struct ehip_dma_response, a))
 //#define ehip_dma_csroffs(a) (offsetof(struct ehip_dma_csr, a))
 #define ehip_dma_descroffs(a) (offsetof(struct ehip_dma_descriptor, a))

@@ -23,7 +23,6 @@
 #ifndef __CTL_EHIP_DMA_H__
 #define __CTL_EHIP_DMA_H__
 
-void ctl_ehip_dma_check(struct ctl_ehip_private *);
 void ctl_ehip_dma_reset(struct ctl_ehip_private *);
 void ctl_ehip_dma_enable_txirq(struct ctl_ehip_private *);
 void ctl_ehip_dma_enable_rxirq(struct ctl_ehip_private *);
@@ -38,5 +37,6 @@ u32 ctl_ehip_dma_rx_status(struct ctl_ehip_private *);
 int ctl_ehip_dma_initialize(struct ctl_ehip_private *);
 void ctl_ehip_dma_uninitialize(struct ctl_ehip_private *);
 void ctl_ehip_dma_start_rxdma(struct ctl_ehip_private *);
+void ctl_ehip_dma_start_txdma(struct ctl_ehip_private *);
 
 #endif /*  __CTL_EHIP_DMA_H__ */
