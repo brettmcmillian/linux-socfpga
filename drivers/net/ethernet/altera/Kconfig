@@ -20,14 +20,4 @@ config ALTERA_TSE
 	  To compile this driver as a module, choose M here. The module
 	  will be called alteratse.
 
-config INTEL_S10_100GHIP
-	tristate "Intel Stratix 10 100G Ethernet Hard IP support"
-	depends on HAS_DMA
-	select PHYLINK
-	---help---
-	  This driver supports the Intel Stratix 10 100G Hard IP MAC+PCS.
-
-	  To compile this driver as a module, choose M here. The module
-	  will be called intel100ghip.
-
 endif # NET_VENDOR_ALTERA

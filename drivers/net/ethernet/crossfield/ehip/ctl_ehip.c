@@ -1193,9 +1193,6 @@ static int ctl_ehip_probe(struct platform_device *pdev)
 	else
 		eth_hw_addr_random(ndev);
 
-	/* Check the eHIP DMA Component Configuration Registers */
-	ctl_ehip_dma_check(priv);
-
 	/* initialize netdev */
 	ndev->mem_start = eth_reconfig->start;
 	ndev->mem_end = eth_reconfig->end;
