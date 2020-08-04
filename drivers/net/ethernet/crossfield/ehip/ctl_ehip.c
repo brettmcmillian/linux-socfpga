@@ -75,7 +75,8 @@ MODULE_PARM_DESC(dma_tx_num, "Number of descriptors in the TX list");
  * 1518, a VLAN header would be additional 4 bytes and additional
  * headroom for alignment is 2 bytes, 2048 is just fine.
  */
-#define ALTERA_RXDMABUFFER_SIZE	2048
+#define EHIP_RXDMABUFFER_SIZE	2048
+#define ALIGNMENT_SIZE			64
 
 /* Allow network stack to resume queueing packets after we've
  * finished transmitting at least 1/4 of the packets in the queue.
@@ -117,7 +118,7 @@ static int ctl_ehip_pcs_scratch_test(struct ctl_ehip_private *priv, u32 value)
 static int ctl_ehip_init_rx_buffer(struct ctl_ehip_private *priv,
 			      struct ctl_ehip_buffer *rxbuffer, int len)
 {
-	rxbuffer->skb = netdev_alloc_skb_ip_align(priv->dev, len);
+	rxbuffer->skb = netdev_alloc_skb(priv->dev, len);
 	if (!rxbuffer->skb)
 		return -ENOMEM;
 
@@ -130,7 +131,7 @@ static int ctl_ehip_init_rx_buffer(struct ctl_ehip_private *priv,
 		dev_kfree_skb_any(rxbuffer->skb);
 		return -EINVAL;
 	}
-	rxbuffer->dma_addr &= (dma_addr_t)~3;
+	//rxbuffer->dma_addr &= (dma_addr_t)~3;
 	rxbuffer->len = len;
 	return 0;
 }
@@ -307,7 +308,7 @@ static int ctl_ehip_rx(struct ctl_ehip_private *priv, int limit)
 		 * IP payload alignment. Status returned by get_rx_status()
 		 * contains DMA transfer length. Packet is 2 bytes shorter.
 		 */
-		pktlength -= 2;
+		//pktlength -= 2;
 
 		count++;
 		next_entry = (++priv->rx_cons) % priv->rx_ring_size;
@@ -328,9 +329,9 @@ static int ctl_ehip_rx(struct ctl_ehip_private *priv, int limit)
 				 priv->rx_ring[entry].len, DMA_FROM_DEVICE);
 
 		if (netif_msg_pktdata(priv)) {
-			netdev_info(priv->dev, "frame received %d bytes\n",
+			netdev_info(priv->dev, "Frame received %d bytes\n",
 				    pktlength);
-			print_hex_dump(KERN_ERR, "data: ", DUMP_PREFIX_OFFSET,
+			print_hex_dump(KERN_ERR, "Data: ", DUMP_PREFIX_OFFSET,
 				       16, 1, skb->data, pktlength, true);
 		}
 
@@ -477,7 +478,10 @@ static int ctl_ehip_start_xmit(struct sk_buff *skb, struct net_device *dev)
 	unsigned int entry;
 	struct ctl_ehip_buffer *buffer = NULL;
 	int nfrags = skb_shinfo(skb)->nr_frags;
-	unsigned int nopaged_len = skb_headlen(skb);
+	unsigned int len = skb_headlen(skb);
+	unsigned int headroom = skb_headroom(skb);
+	unsigned int padded_len = ALIGNMENT_SIZE * (len/ALIGNMENT_SIZE + 1);
+
 	enum netdev_tx ret = NETDEV_TX_OK;
 	dma_addr_t dma_addr;
 
@@ -499,7 +503,21 @@ static int ctl_ehip_start_xmit(struct sk_buff *skb, struct net_device *dev)
 	entry = priv->tx_prod % txsize;
 	buffer = &priv->tx_ring[entry];
 
-	dma_addr = dma_map_single(priv->device, skb->data, nopaged_len,
+	memmove(skb->head, skb->data, len);
+
+	skb_push(skb, headroom);
+
+	skb_put_padto(skb, padded_len);
+
+	if (netif_msg_pktdata(priv)) {
+		netdev_info(priv->dev, "Transmitting frame of %d bytes. Padded length = %d bytes.\n",
+					len, padded_len);
+		print_hex_dump(KERN_ERR, "TX Data: ", DUMP_PREFIX_OFFSET,
+					16, 1, skb->data, len, true);
+	}
+
+
+	dma_addr = dma_map_single(priv->device, skb->data, padded_len,
 				  DMA_TO_DEVICE);
 	if (dma_mapping_error(priv->device, dma_addr)) {
 		netdev_err(priv->dev, "%s: DMA mapping error\n", __func__);
@@ -509,14 +527,14 @@ static int ctl_ehip_start_xmit(struct sk_buff *skb, struct net_device *dev)
 
 	buffer->skb = skb;
 	buffer->dma_addr = dma_addr;
-	buffer->len = nopaged_len;
+	buffer->len = len;
 
 	priv->dmaops->tx_buffer(priv, buffer);
 
 	skb_tx_timestamp(skb);
 
 	priv->tx_prod++;
-	dev->stats.tx_bytes += skb->len;
+	dev->stats.tx_bytes += len;
 
 	if (unlikely(ctl_ehip_tx_avail(priv) <= TXQUEUESTOP_THRESHHOLD)) {
 		if (netif_msg_hw(priv))
@@ -637,9 +655,9 @@ static int init_phy(struct net_device *dev)
 			tx_ready = 1;
 
 		if (tx_ready != 1) {
-			printk("ctl_ehip: Resetting the 100G HIP core.\n");
+			printk("Crossfield eHIP Driver: Resetting the 100G HIP core.\n");
 			if (retries == 4) {
-				printk("ctl_ehip: Failed to bring up the interace.\n");
+				printk("Crossfield eHIP Driver: Failed to bring up the interace.\n");
 				return -1;
 			}
 
@@ -660,9 +678,9 @@ static int init_phy(struct net_device *dev)
 			rx_ready = 1;
 
 		if (rx_ready != 1) {
-			printk("ctl_ehip: Resetting the 100G HIP receiver.\n");
+			printk("Crossfield eHIP Driver: Resetting the 100G HIP receiver.\n");
 			if (retries == 4) {
-				printk("ctl_ehip: Failed to align the receiver.\n");
+				printk("Crossfield eHIP Driver: Failed to align the receiver.\n");
 				return -2;
 			}
 
@@ -675,7 +693,7 @@ static int init_phy(struct net_device *dev)
 			break;
 	}
 
-	printk("ctl_ehip: Interace is ready for link up.\n");
+	printk("Crossfield eHIP Driver: Interace is ready for link up.\n");
 
 	reg = readl(&priv->eth_reconfig->anlt_sequencer_config);
     reg &= ~ANLT_SEQ_AN_TIMEOUT;
@@ -709,17 +727,12 @@ static void ctl_ehip_update_mac_addr(struct ctl_ehip_private *priv, u8 *addr)
 	u32 lsb;
 	u32 dat;
 
-	dat = readl(&priv->eth_reconfig->txmac_config);
-	dat |= TX_MAC_EN_SADDR_INSERT;
-
 	msb = (addr[2] << 24) | (addr[3] << 16) | (addr[4] << 8) | addr[5];
 	lsb = ((addr[0] << 8) | addr[1]) & 0xffff;
 
 	/* Set primary MAC address */
 	writel(msb, &priv->eth_reconfig->txmac_src_address_low);
 	writel(lsb, &priv->eth_reconfig->txmac_src_address_high);
-
-	writel(dat, &priv->eth_reconfig->txmac_config);
 }
 
 /* MAC software reset.
@@ -899,6 +912,8 @@ static int ctl_ehip_open(struct net_device *dev)
 
 	/* Enable DMA interrupts */
 	spin_lock_irqsave(&priv->rxdma_irq_lock, flags);
+	priv->dmaops->clear_rxirq(priv);
+	priv->dmaops->clear_txirq(priv);
 	priv->dmaops->enable_rxirq(priv);
 	priv->dmaops->enable_txirq(priv);
 
@@ -1187,7 +1202,7 @@ static int ctl_ehip_probe(struct platform_device *pdev)
 	/* The DMA buffer size already accounts for an alignment bias
 	 * to avoid unaligned access exceptions for the NIOS processor,
 	 */
-	priv->rx_dma_buf_sz = ALTERA_RXDMABUFFER_SIZE;
+	priv->rx_dma_buf_sz = EHIP_RXDMABUFFER_SIZE;
 
 	/* get default MAC address from device tree */
 	macaddr = of_get_mac_address(pdev->dev.of_node);

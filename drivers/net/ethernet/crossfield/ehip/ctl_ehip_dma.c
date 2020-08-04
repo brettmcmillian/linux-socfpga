@@ -40,40 +40,12 @@ void ctl_ehip_dma_uninitialize(struct ctl_ehip_private *priv)
 
 void ctl_ehip_dma_start_rxdma(struct ctl_ehip_private *priv)
 {
-	int counter;
-
-	counter = 0;
-	while (counter++ < EHIP_DMA_SW_START_WATCHDOG_CNTR) {
-		if (ctl_ehip_bit_is_clear(priv->rx_dma_csr,
-			RX_EHIP_DMA_CSR_BUSY_MASK))
-			break;
-		udelay(1);
-	}
-
-	if (counter >= EHIP_DMA_SW_START_WATCHDOG_CNTR)
-		netif_warn(priv, drv, priv->dev,
-			   "RX eHIP DMA is busy! Unable to start.\n");
-
 	ctl_ehip_clear_bit(&priv->rx_dma_csr->start,
 			RX_EHIP_DMA_CSR_START_MASK);
 }
 
 void ctl_ehip_dma_start_txdma(struct ctl_ehip_private *priv)
 {
-	int counter;
-
-	counter = 0;
-	while (counter++ < EHIP_DMA_SW_START_WATCHDOG_CNTR) {
-		if (ctl_ehip_bit_is_clear(priv->tx_dma_csr,
-			TX_EHIP_DMA_CSR_BUSY_MASK))
-			break;
-		udelay(1);
-	}
-
-	if (counter >= EHIP_DMA_SW_START_WATCHDOG_CNTR)
-		netif_warn(priv, drv, priv->dev,
-			   "TX eHIP DMA is busy! Unable to start.\n");
-
 	ctl_ehip_clear_bit(&priv->tx_dma_csr->start,
 			TX_EHIP_DMA_CSR_START_MASK);
 }
@@ -129,7 +101,6 @@ int ctl_ehip_dma_tx_buffer(struct ctl_ehip_private *priv, struct ctl_ehip_buffer
 
 u32 ctl_ehip_dma_tx_completions(struct ctl_ehip_private *priv)
 {
-	u32 ready = 0;
 	//u32 inuse;
 	//u32 status;
 
@@ -147,9 +118,10 @@ u32 ctl_ehip_dma_tx_completions(struct ctl_ehip_private *priv)
 	//	else
 	//		ready = priv->tx_prod - priv->tx_cons;
 	//}
-	ready = readl(&priv->tx_dma_csr->tx_completions);
+	if (readl(&priv->tx_dma_csr->busy) != TX_EHIP_DMA_CSR_BUSY_MASK)
+		return 1;
 
-	return ready;
+	return 0;
 }
 
 /* Put buffer to the eHIP DMA RX FIFO
@@ -175,7 +147,7 @@ u32 ctl_ehip_dma_rx_status(struct ctl_ehip_private *priv)
 	u32 pktlength;
 	u32 pktstatus;
 
-	if (readl(&priv->rx_dma_csr->resp_fill_level)) {
+	if (readl(&priv->rx_dma_csr->busy) != RX_EHIP_DMA_CSR_BUSY_MASK) {
 		pktlength = readl(&priv->rx_dma_resp->bytes_transferred);
 		pktstatus = readl(&priv->rx_dma_resp->status);
 		rxstatus = pktstatus;
