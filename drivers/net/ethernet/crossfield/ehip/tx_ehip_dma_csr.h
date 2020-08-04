@@ -40,14 +40,14 @@ NOTE: Writes to reserved bits will be ignored and reads from reserved
 */
 
 struct ehip_dma_tx_csr {
-	u32 reserved1;
 	u32 busy;
-	u32 reserved2;
+     u32 reserved1;
 	u32 start;
-     u32 reserved3;
+     u32 reserved2;
      u32 interrupt_enable;
-     u32 reserved4;
+     u32 reserved3;
      u32 status;
+     u32 reserved4;
      u32 reserved5;
      u32 tx_completions;
 };
