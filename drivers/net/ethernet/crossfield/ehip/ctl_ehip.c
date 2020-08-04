@@ -348,6 +348,8 @@ static int ctl_ehip_rx(struct ctl_ehip_private *priv, int limit)
 		entry = next_entry;
 
 		ctl_ehip_rx_refill(priv);
+
+		priv->dmaops->start_rxdma(priv);
 	}
 
 	return count;
@@ -383,7 +385,8 @@ static int ctl_ehip_tx_complete(struct ctl_ehip_private *priv)
 		priv->tx_cons++;
 
 		txcomplete++;
-		ready--;
+		priv->dmaops->start_txdma(priv);
+		ready = priv->dmaops->tx_completions(priv);
 	}
 
 	if (unlikely(netif_queue_stopped(priv->dev) &&
