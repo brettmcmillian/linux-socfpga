@@ -545,13 +545,12 @@
 					<0x00040000 0x00002000>,
 					<0x00048000 0x00000040>,
 					<0x00048090 0x00000010>,
-					<0x00048080 0x00000010>,
 					<0x00048040 0x00000040>,
 					<0x000480a0 0x00000010>,
 					<0x000480b0 0x00000008>;
 				reg-names = "eth_reconfig",
 						"xcvr_reconfig0", "xcvr_reconfig1", "xcvr_reconfig2", "xcvr_reconfig3",
-						"rx_csr", "rx_desc", "rx_resp", "tx_csr", "tx_desc",
+						"rx_csr", "rx_desc", "tx_csr", "tx_desc",
 						"sysid";
 				interrupt-parent = <&intc>;
 				interrupts = <0 18 4>, <0 17 4>;

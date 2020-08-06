@@ -1070,11 +1070,11 @@ static int ctl_ehip_probe(struct platform_device *pdev)
 
 	if (priv->dmaops &&
 		   priv->dmaops->crossfield_dtype == CROSSFIELD_DTYPE_EHIP_DMA) {
-		ret = request_and_map(pdev, "rx_resp", &dma_res,
+/*		ret = request_and_map(pdev, "rx_resp", &dma_res,
 				      (void __iomem **)&priv->rx_dma_resp);
 		if (ret)
 			goto err_free_netdev;
-
+*/
 		ret = request_and_map(pdev, "tx_desc", &dma_res,
 				      (void __iomem **)&priv->tx_dma_desc);
 		if (ret)

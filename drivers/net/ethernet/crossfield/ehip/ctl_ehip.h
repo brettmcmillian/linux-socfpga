@@ -552,7 +552,7 @@ struct ctl_ehip_private {
 	/* eHIP DMA Rx Dispatcher address space */
 	struct ehip_dma_rx_csr __iomem *rx_dma_csr;
 	struct ehip_dma_descriptor __iomem *rx_dma_desc;
-	struct ehip_dma_response __iomem *rx_dma_resp;
+//	struct ehip_dma_response __iomem *rx_dma_resp;
 
 	/* eHIP DMA Tx Dispatcher address space */
 	struct ehip_dma_tx_csr __iomem *tx_dma_csr;

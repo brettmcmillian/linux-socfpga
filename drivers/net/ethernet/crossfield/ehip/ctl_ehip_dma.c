@@ -40,14 +40,14 @@ void ctl_ehip_dma_uninitialize(struct ctl_ehip_private *priv)
 
 void ctl_ehip_dma_start_rxdma(struct ctl_ehip_private *priv)
 {
-	ctl_ehip_clear_bit(&priv->rx_dma_csr->start,
-			RX_EHIP_DMA_CSR_START_MASK);
+	if ((readl(&priv->rx_dma_csr->busy) & 0x1) == 0)
+		writel(RX_EHIP_DMA_CSR_START_MASK, &priv->rx_dma_csr->start);
 }
 
 void ctl_ehip_dma_start_txdma(struct ctl_ehip_private *priv)
 {
-	ctl_ehip_clear_bit(&priv->tx_dma_csr->start,
-			TX_EHIP_DMA_CSR_START_MASK);
+	if ((readl(&priv->tx_dma_csr->busy) & 0x1) == 0)
+		writel(TX_EHIP_DMA_CSR_START_MASK, &priv->tx_dma_csr->start);
 }
 
 void ctl_ehip_dma_reset(struct ctl_ehip_private *priv)
@@ -57,26 +57,24 @@ void ctl_ehip_dma_reset(struct ctl_ehip_private *priv)
 
 void ctl_ehip_dma_disable_rxirq(struct ctl_ehip_private *priv)
 {
-	ctl_ehip_clear_bit(&priv->rx_dma_csr->interrupt_enable,
-		      RX_EHIP_DMA_CSR_INTERRUPT_ENABLE_MASK);
+	writel(0, &priv->rx_dma_csr->interrupt_enable);
 }
 
 void ctl_ehip_dma_enable_rxirq(struct ctl_ehip_private *priv)
 {
-	ctl_ehip_set_bit(&priv->rx_dma_csr->interrupt_enable,
-		    RX_EHIP_DMA_CSR_INTERRUPT_ENABLE_MASK);
+	writel(RX_EHIP_DMA_CSR_INTERRUPT_ENABLE_MASK,
+			&priv->rx_dma_csr->interrupt_enable);
 }
 
 void ctl_ehip_dma_disable_txirq(struct ctl_ehip_private *priv)
 {
-	ctl_ehip_clear_bit(&priv->tx_dma_csr->interrupt_enable,
-		      TX_EHIP_DMA_CSR_INTERRUPT_ENABLE_MASK);
+	writel(0, &priv->tx_dma_csr->interrupt_enable);
 }
 
 void ctl_ehip_dma_enable_txirq(struct ctl_ehip_private *priv)
 {
-	ctl_ehip_set_bit(&priv->tx_dma_csr->interrupt_enable,
-		    TX_EHIP_DMA_CSR_INTERRUPT_ENABLE_MASK);
+	writel(TX_EHIP_DMA_CSR_INTERRUPT_ENABLE_MASK,
+			&priv->tx_dma_csr->interrupt_enable);
 }
 
 void ctl_ehip_dma_clear_rxirq(struct ctl_ehip_private *priv)
@@ -86,7 +84,7 @@ void ctl_ehip_dma_clear_rxirq(struct ctl_ehip_private *priv)
 
 void ctl_ehip_dma_clear_txirq(struct ctl_ehip_private *priv)
 {
-	writel(RX_EHIP_DMA_CSR_INTERRUPT_STATUS_MASK, &priv->tx_dma_csr->status);
+	writel(TX_EHIP_DMA_CSR_INTERRUPT_STATUS_MASK, &priv->tx_dma_csr->status);
 }
 
 /* return 0 to indicate transmit is pending */
@@ -143,7 +141,7 @@ void ctl_ehip_dma_add_rx_desc(struct ctl_ehip_private *priv,
  */
 u32 ctl_ehip_dma_rx_status(struct ctl_ehip_private *priv)
 {
-	u32 pktlength;
+	u32 pktlength = 0;
 
 	if (readl(&priv->rx_dma_csr->busy) != RX_EHIP_DMA_CSR_BUSY_MASK) {
 		pktlength = readl(&priv->rx_dma_csr->bytes_transferred);
