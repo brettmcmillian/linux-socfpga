@@ -101,7 +101,6 @@ int ctl_ehip_dma_tx_buffer(struct ctl_ehip_private *priv, struct ctl_ehip_buffer
 
 u32 ctl_ehip_dma_tx_completions(struct ctl_ehip_private *priv)
 {
-	u32 ready = 0;
 	//u32 inuse;
 	//u32 status;
 
@@ -119,12 +118,10 @@ u32 ctl_ehip_dma_tx_completions(struct ctl_ehip_private *priv)
 	//	else
 	//		ready = priv->tx_prod - priv->tx_cons;
 	//}
-	while (readl(&priv->tx_dma_csr->busy) != TX_EHIP_DMA_CSR_BUSY_MASK) {
-		ready++;
-		ctl_ehip_dma_start_txdma(priv);
-	}
+	if (readl(&priv->tx_dma_csr->busy) != TX_EHIP_DMA_CSR_BUSY_MASK)
+		return 1;
 
-	return ready;
+	return 0;
 }
 
 /* Put buffer to the eHIP DMA RX FIFO
@@ -146,16 +143,10 @@ void ctl_ehip_dma_add_rx_desc(struct ctl_ehip_private *priv,
  */
 u32 ctl_ehip_dma_rx_status(struct ctl_ehip_private *priv)
 {
-	u32 rxstatus = 0;
 	u32 pktlength;
-	u32 pktstatus;
 
 	if (readl(&priv->rx_dma_csr->busy) != RX_EHIP_DMA_CSR_BUSY_MASK) {
-		pktlength = readl(&priv->rx_dma_resp->bytes_transferred);
-		pktstatus = readl(&priv->rx_dma_resp->status);
-		rxstatus = pktstatus;
-		rxstatus = rxstatus << 16;
-		rxstatus |= (pktlength & 0xffff);
+		pktlength = readl(&priv->rx_dma_csr->bytes_transferred);
 	}
-	return rxstatus;
+	return pktlength;
 }

@@ -279,9 +279,7 @@ static int ctl_ehip_rx(struct ctl_ehip_private *priv, int limit)
 	unsigned int next_entry;
 	struct sk_buff *skb;
 	unsigned int entry = priv->rx_cons % priv->rx_ring_size;
-	u32 rxstatus;
-	u16 pktlength;
-	u16 pktstatus;
+	u32 pktlength;
 
 	/* Check for count < limit first as get_rx_status is changing
 	* the response-fifo so we must process the next packet
@@ -289,14 +287,12 @@ static int ctl_ehip_rx(struct ctl_ehip_private *priv, int limit)
 	* (reading the last byte of the response pops the value from the fifo.)
 	*/
 	while ((count < limit) &&
-	       ((rxstatus = priv->dmaops->get_rx_status(priv)) != 0)) {
-		pktstatus = rxstatus >> 16;
-		pktlength = rxstatus & 0xffff;
+	    (pktlength = priv->dmaops->get_rx_status(priv) != 0)) {
 
-		if ((pktstatus & 0xFF) || (pktlength == 0)) {
+		if (pktlength > priv->dev->mtu) {
 			netdev_err(priv->dev,
-				   "RCV pktstatus %08X pktlength %08X\n",
-				   pktstatus, pktlength);
+				   "Received packet greater than MTU of length %08X\n",
+				   pktlength);
 			break;
 		}
 //		else

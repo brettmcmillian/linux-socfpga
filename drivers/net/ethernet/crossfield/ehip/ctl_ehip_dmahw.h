@@ -75,13 +75,13 @@ struct ehip_dma_descriptor {
 					 EHIP_DMA_DESC_CTL_GO)
 */
 
-/* eHIP DMA response register map */
+/* eHIP DMA response register map 
 struct ehip_dma_response {
 	u32 bytes_transferred;
 	u32 status;	/* 15:8	- Early Termination
 				 * 7:0	- Error
-				 */
-};
+				 
+};*/
 
 #define EHIP_DMA_SW_START_WATCHDOG_CNTR 10000
 
