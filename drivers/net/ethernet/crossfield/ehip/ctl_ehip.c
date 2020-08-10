@@ -287,7 +287,7 @@ static int ctl_ehip_rx(struct ctl_ehip_private *priv, int limit)
 	* (reading the last byte of the response pops the value from the fifo.)
 	*/
 	while ((count < limit) &&
-	    (pktlength = priv->dmaops->get_rx_status(priv) != 0)) {
+	    ((pktlength = priv->dmaops->get_rx_status(priv)) != 0)) {
 
 		if (pktlength > priv->dev->mtu) {
 			netdev_err(priv->dev,
@@ -295,10 +295,6 @@ static int ctl_ehip_rx(struct ctl_ehip_private *priv, int limit)
 				   pktlength);
 			break;
 		}
-//		else
-//		{
-//			printk("Received a packet of length 0x%08X.\n", pktlength);
-//		}
 
 		/* DMA transfer from 100G HIP starts with 2 aditional bytes for
 		 * IP payload alignment. Status returned by get_rx_status()
@@ -427,9 +423,8 @@ static int ctl_ehip_poll(struct napi_struct *napi, int budget)
 		priv->dmaops->enable_rxirq(priv);
 		priv->dmaops->enable_txirq(priv);
 		spin_unlock_irqrestore(&priv->rxdma_irq_lock, flags);
-		priv->dmaops->start_rxdma(priv);
-		priv->dmaops->start_txdma(priv);
 	}
+
 	return rxcomplete;
 }
 
@@ -461,6 +456,8 @@ static irqreturn_t crossfield_isr(int irq, void *dev_id)
 		__napi_schedule(&priv->napi);
 	}
 
+	priv->dmaops->start_rxdma(priv);
+	priv->dmaops->start_txdma(priv);
 
 	return IRQ_HANDLED;
 }
@@ -911,8 +908,6 @@ static int ctl_ehip_open(struct net_device *dev)
 
 	/* Enable DMA interrupts */
 	spin_lock_irqsave(&priv->rxdma_irq_lock, flags);
-	priv->dmaops->clear_rxirq(priv);
-	priv->dmaops->clear_txirq(priv);
 	priv->dmaops->enable_rxirq(priv);
 	priv->dmaops->enable_txirq(priv);
 
@@ -1186,6 +1181,12 @@ static int ctl_ehip_probe(struct platform_device *pdev)
 		ret = -ENXIO;
 		goto err_free_netdev;
 	}
+
+	priv->hash_filter = 0;
+
+	priv->added_unicast =
+		of_property_read_bool(pdev->dev.of_node,
+				      "altr,has-supplementary-unicast");
 
 	priv->dev->min_mtu = ETH_ZLEN + ETH_FCS_LEN;
 	/* Max MTU is 1500, ETH_DATA_LEN */

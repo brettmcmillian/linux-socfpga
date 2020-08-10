@@ -48,8 +48,9 @@ struct ehip_dma_tx_csr {
      u32 reserved3;
      u32 status;
      u32 reserved4;
-     u32 reserved5;
      u32 tx_completions;
+     u32 reserved5;
+     
 };
 
 /******************************************************************************/
