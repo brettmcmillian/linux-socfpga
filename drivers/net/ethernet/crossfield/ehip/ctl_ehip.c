@@ -425,6 +425,9 @@ static int ctl_ehip_poll(struct napi_struct *napi, int budget)
 		spin_unlock_irqrestore(&priv->rxdma_irq_lock, flags);
 	}
 
+	priv->dmaops->start_rxdma(priv);
+	priv->dmaops->start_txdma(priv);
+
 	return rxcomplete;
 }
 
@@ -877,6 +880,9 @@ static int ctl_ehip_open(struct net_device *dev)
 	}
 
 	//priv->dmaops->reset_dma(priv);
+
+	priv->dmaops->clear_rxirq(priv);
+	priv->dmaops->clear_txirq(priv);
 
 	/* Create and initialize the TX/RX descriptors chains. */
 	priv->rx_ring_size = dma_rx_num;
