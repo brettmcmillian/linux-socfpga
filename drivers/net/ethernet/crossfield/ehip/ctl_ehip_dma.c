@@ -25,6 +25,8 @@
 #include "ctl_ehip.h"
 #include "rx_ehip_dma_csr.h"
 #include "tx_ehip_dma_csr.h"
+#include "rx_dispatcher_csr.h"
+#include "tx_dispatcher_csr.h"
 #include "ctl_ehip_dma.h"
 #include "ctl_ehip_dmahw.h"
 
@@ -93,7 +95,8 @@ int ctl_ehip_dma_tx_buffer(struct ctl_ehip_private *priv, struct ctl_ehip_buffer
 	writel(lower_32_bits(buffer->dma_addr), &priv->tx_dma_desc->addr32);
 	writel(upper_32_bits(buffer->dma_addr), &priv->tx_dma_desc->addr64);
 	writel(buffer->len, &priv->tx_dma_desc->length);
-	writel(EHIP_DMA_DESC_CTL_GO, &priv->tx_dma_desc->control);
+	if (readl(&priv->tx_dma_desc->busy) != TX_DISPATCHER_CSR_BUSY_MASK)
+		writel(TX_DISPATCHER_CSR_START_MASK, &priv->tx_dma_desc->start);
 	return 0;
 }
 
@@ -133,7 +136,8 @@ void ctl_ehip_dma_add_rx_desc(struct ctl_ehip_private *priv,
 	writel(lower_32_bits(dma_addr), &priv->rx_dma_desc->addr32);
 	writel(upper_32_bits(dma_addr), &priv->rx_dma_desc->addr64);
 	writel(len, &priv->rx_dma_desc->length);
-	writel(EHIP_DMA_DESC_CTL_GO, &priv->rx_dma_desc->control);
+	if (readl(&priv->rx_dma_desc->busy) != RX_DISPATCHER_CSR_BUSY_MASK)
+		writel(RX_DISPATCHER_CSR_START_MASK, &priv->rx_dma_desc->start);
 }
 
 /* status is returned on upper 16 bits,
@@ -145,6 +149,7 @@ u32 ctl_ehip_dma_rx_status(struct ctl_ehip_private *priv)
 
 	if (readl(&priv->rx_dma_csr->busy) != RX_EHIP_DMA_CSR_BUSY_MASK) {
 		pktlength = readl(&priv->rx_dma_csr->bytes_transferred);
+		writel(RX_EHIP_DMA_CSR_START_MASK, &priv->rx_dma_csr->start);
 	}
 	return pktlength;
 }

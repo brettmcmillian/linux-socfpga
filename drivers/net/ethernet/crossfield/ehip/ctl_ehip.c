@@ -57,12 +57,12 @@ static const u32 default_msg_level = (NETIF_MSG_DRV | NETIF_MSG_PROBE |
 					NETIF_MSG_LINK | NETIF_MSG_IFUP |
 					NETIF_MSG_IFDOWN);
 
-#define RX_DESCRIPTORS 64
+#define RX_DESCRIPTORS 256
 static int dma_rx_num = RX_DESCRIPTORS;
 module_param(dma_rx_num, int, S_IRUGO | S_IWUSR);
 MODULE_PARM_DESC(dma_rx_num, "Number of descriptors in the RX list");
 
-#define TX_DESCRIPTORS 64
+#define TX_DESCRIPTORS 256
 static int dma_tx_num = TX_DESCRIPTORS;
 module_param(dma_tx_num, int, S_IRUGO | S_IWUSR);
 MODULE_PARM_DESC(dma_tx_num, "Number of descriptors in the TX list");
@@ -323,7 +323,7 @@ static int ctl_ehip_rx(struct ctl_ehip_private *priv, int limit)
 		if (netif_msg_pktdata(priv)) {
 			netdev_info(priv->dev, "Frame received %d bytes\n",
 				    pktlength);
-			print_hex_dump(KERN_ERR, "Data: ", DUMP_PREFIX_OFFSET,
+			print_hex_dump(KERN_ERR, "RX Data: ", DUMP_PREFIX_OFFSET,
 				       16, 1, skb->data, pktlength, true);
 		}
 
@@ -340,8 +340,6 @@ static int ctl_ehip_rx(struct ctl_ehip_private *priv, int limit)
 		entry = next_entry;
 
 		ctl_ehip_rx_refill(priv);
-
-		priv->dmaops->start_rxdma(priv);
 	}
 
 	return count;
@@ -423,10 +421,10 @@ static int ctl_ehip_poll(struct napi_struct *napi, int budget)
 		priv->dmaops->enable_rxirq(priv);
 		priv->dmaops->enable_txirq(priv);
 		spin_unlock_irqrestore(&priv->rxdma_irq_lock, flags);
-	}
 
-	priv->dmaops->start_rxdma(priv);
-	priv->dmaops->start_txdma(priv);
+		priv->dmaops->start_rxdma(priv);
+		priv->dmaops->start_txdma(priv);
+	}
 
 	return rxcomplete;
 }
@@ -458,9 +456,6 @@ static irqreturn_t crossfield_isr(int irq, void *dev_id)
 		spin_unlock(&priv->rxdma_irq_lock);
 		__napi_schedule(&priv->napi);
 	}
-
-	priv->dmaops->start_rxdma(priv);
-	priv->dmaops->start_txdma(priv);
 
 	return IRQ_HANDLED;
 }
@@ -881,9 +876,6 @@ static int ctl_ehip_open(struct net_device *dev)
 
 	//priv->dmaops->reset_dma(priv);
 
-	priv->dmaops->clear_rxirq(priv);
-	priv->dmaops->clear_txirq(priv);
-
 	/* Create and initialize the TX/RX descriptors chains. */
 	priv->rx_ring_size = dma_rx_num;
 	priv->tx_ring_size = dma_tx_num;
@@ -914,6 +906,8 @@ static int ctl_ehip_open(struct net_device *dev)
 
 	/* Enable DMA interrupts */
 	spin_lock_irqsave(&priv->rxdma_irq_lock, flags);
+	priv->dmaops->clear_rxirq(priv);
+	priv->dmaops->clear_txirq(priv);
 	priv->dmaops->enable_rxirq(priv);
 	priv->dmaops->enable_txirq(priv);
 
