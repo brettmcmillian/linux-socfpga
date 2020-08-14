@@ -120,7 +120,7 @@ u32 ctl_ehip_dma_tx_completions(struct ctl_ehip_private *priv)
 	//		ready = priv->tx_prod - priv->tx_cons;
 	//}
 	if (readl(&priv->tx_dma_csr->busy) != TX_EHIP_DMA_CSR_BUSY_MASK)
-		return 1;
+		return readl(&priv->tx_dma_csr->tx_completions);
 
 	return 0;
 }
