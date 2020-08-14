@@ -102,27 +102,13 @@ int ctl_ehip_dma_tx_buffer(struct ctl_ehip_private *priv, struct ctl_ehip_buffer
 
 u32 ctl_ehip_dma_tx_completions(struct ctl_ehip_private *priv)
 {
-	//u32 inuse;
-	//u32 status;
+	u32 ready = 0;
+	u32 inuse;
+	u32 status;
 
-	/* Get number of sent descriptors */
-	//inuse = readl(&priv->tx_dma_csr->rw_fill_level) & 0xffff;
+	ready = priv->tx_prod - priv->tx_cons;
 
-	//if (inuse) { /* Tx FIFO is not empty */
-	//	ready = max_t(int,
-	//		      priv->tx_prod - priv->tx_cons - inuse - 1, 0);
-	//} else {
-		/* Check for buffered last packet */
-	//	status = readl(&priv->tx_dma_csr->status);
-	//	if (status & EHIP_DMA_CSR_STAT_BUSY)
-	//		ready = priv->tx_prod - priv->tx_cons - 1;
-	//	else
-	//		ready = priv->tx_prod - priv->tx_cons;
-	//}
-	if (readl(&priv->tx_dma_csr->busy) != TX_EHIP_DMA_CSR_BUSY_MASK)
-		return readl(&priv->tx_dma_csr->tx_completions);
-
-	return 0;
+	return ready;
 }
 
 /* Put buffer to the eHIP DMA RX FIFO
