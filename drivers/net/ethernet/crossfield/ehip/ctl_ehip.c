@@ -290,7 +290,7 @@ static int ctl_ehip_rx(struct ctl_ehip_private *priv, int limit)
 	* (reading the last byte of the response pops the value from the fifo.)
 	*/
 	while ((count < limit) &&
-	    (priv->dmaops->get_rx_status(priv))) {
+	    (priv->dmaops->get_rx_status(priv) != RX_DESCRIPTORS)) {
 
 		count++;
 		next_entry = (++priv->rx_cons) % priv->rx_ring_size;
@@ -406,8 +406,6 @@ static int ctl_ehip_poll(struct napi_struct *napi, int budget)
 	int rxcomplete = 0;
 	unsigned long int flags;
 
-	ctl_ehip_tx_complete(priv);
-
 	rxcomplete = ctl_ehip_rx(priv, budget);
 
 	if (rxcomplete < budget) {
@@ -420,11 +418,9 @@ static int ctl_ehip_poll(struct napi_struct *napi, int budget)
 
 		spin_lock_irqsave(&priv->rxdma_irq_lock, flags);
 		priv->dmaops->enable_rxirq(priv);
-		priv->dmaops->enable_txirq(priv);
 		spin_unlock_irqrestore(&priv->rxdma_irq_lock, flags);
 
 		priv->dmaops->start_rxdma(priv);
-		priv->dmaops->start_txdma(priv);
 	}
 
 	return rxcomplete;
@@ -437,6 +433,7 @@ static irqreturn_t crossfield_isr(int irq, void *dev_id)
 {
 	struct net_device *dev = dev_id;
 	struct ctl_ehip_private *priv;
+	unsigned long int flags;
 
 	if (unlikely(!dev)) {
 		pr_err("%s: invalid dev pointer\n", __func__);
@@ -445,17 +442,32 @@ static irqreturn_t crossfield_isr(int irq, void *dev_id)
 	priv = netdev_priv(dev);
 
 	spin_lock(&priv->rxdma_irq_lock);
-	/* reset IRQs */
+	/* Clear IRQ Status Registers */
 	priv->dmaops->clear_rxirq(priv);
 	priv->dmaops->clear_txirq(priv);
 	spin_unlock(&priv->rxdma_irq_lock);
 
-	if (likely(napi_schedule_prep(&priv->napi))) {
+	if (irq == &priv->rx_irq) {
+
+		if (likely(napi_schedule_prep(&priv->napi))) {
+			spin_lock(&priv->rxdma_irq_lock);
+			priv->dmaops->disable_rxirq(priv);
+			
+			spin_unlock(&priv->rxdma_irq_lock);
+			__napi_schedule(&priv->napi);
+		}
+	} else {
 		spin_lock(&priv->rxdma_irq_lock);
-		priv->dmaops->disable_rxirq(priv);
 		priv->dmaops->disable_txirq(priv);
 		spin_unlock(&priv->rxdma_irq_lock);
-		__napi_schedule(&priv->napi);
+
+		ctl_ehip_tx_complete(priv);
+
+		spin_lock_irqsave(&priv->rxdma_irq_lock, flags);
+		priv->dmaops->enable_txirq(priv);
+		spin_unlock_irqrestore(&priv->rxdma_irq_lock, flags);
+
+		priv->dmaops->start_txdma(priv);
 	}
 
 	return IRQ_HANDLED;

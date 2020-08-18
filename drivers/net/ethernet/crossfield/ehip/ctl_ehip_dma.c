@@ -89,6 +89,11 @@ void ctl_ehip_dma_clear_txirq(struct ctl_ehip_private *priv)
 	writel(TX_EHIP_DMA_CSR_INTERRUPT_STATUS_MASK, &priv->tx_dma_csr->status);
 }
 
+void ctl_ehip_dma_rxirq_status(struct ctl_ehip_private *priv)
+{
+	writel(TX_EHIP_DMA_CSR_INTERRUPT_STATUS_MASK, &priv->tx_dma_csr->status);
+}
+
 /* return 0 to indicate transmit is pending */
 int ctl_ehip_dma_tx_buffer(struct ctl_ehip_private *priv, struct ctl_ehip_buffer *buffer)
 {
@@ -137,11 +142,12 @@ void ctl_ehip_dma_add_rx_desc(struct ctl_ehip_private *priv,
  */
 u32 ctl_ehip_dma_rx_status(struct ctl_ehip_private *priv)
 {
-	u32 completion = 0;
+	u32 fill_level;
 
-	if (readl(&priv->rx_dma_csr->busy) != RX_EHIP_DMA_CSR_BUSY_MASK) {
-		completion = 1;
-		writel(RX_EHIP_DMA_CSR_START_MASK, &priv->rx_dma_csr->start);
-	}
-	return completion;
+	fill_level = readl(&priv->rx_dma_desc->fill_level);
+
+	writel(0, &priv->rx_dma_desc->length);
+	writel(RX_DISPATCHER_CSR_START_MASK, &priv->rx_dma_desc->start);
+	
+	return fill_level;
 }
