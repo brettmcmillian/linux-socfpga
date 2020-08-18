@@ -10,6 +10,10 @@
 /* Memory Map Summary                                                         */
 /******************************************************************************/
 
+/******************************************************************************/
+/* Memory Map Summary                                                         */
+/******************************************************************************/
+
 /*
   Register  | Access  |   Register Contents      | Description
   Address   |         |      (64-bits)           | 
@@ -31,15 +35,12 @@
             |         |               done[0:0], |       done is read-only and
             |         |   interrupt_status[0:0]} | interrupt_status is write 1
             |         |                          |                    to clear
-------------|---------|--------------------------|-----------------------------
-       0x20 |       R |         {reserved[31:0], |                 Return data
-            |         |        returndata[31:0]} |                            
 
 NOTE: Writes to reserved bits will be ignored and reads from reserved
       bits will return undefined values.
 */
 
-struct ehip_dma_tx_csr {
+struct tx_ehip_dma_csr {
 	u32 busy;
      u32 reserved1;
 	u32 start;
@@ -47,10 +48,7 @@ struct ehip_dma_tx_csr {
      u32 interrupt_enable;
      u32 reserved3;
      u32 status;
-     u32 reserved4;
-     u32 tx_completions;
-     u32 reserved5;
-     
+     u32 reserved4;     
 };
 
 /******************************************************************************/
@@ -62,13 +60,10 @@ struct ehip_dma_tx_csr {
 #define TX_EHIP_DMA_CSR_START_REG (0x8)
 #define TX_EHIP_DMA_CSR_INTERRUPT_ENABLE_REG (0x10)
 #define TX_EHIP_DMA_CSR_INTERRUPT_STATUS_REG (0x18)
-#define TX_EHIP_DMA_CSR_RETURNDATA_REG (0x20)
 
 /* Argument Sizes (bytes) */
-#define TX_EHIP_DMA_CSR_RETURNDATA_SIZE (4)
 
 /* Argument Masks */
-#define TX_EHIP_DMA_CSR_RETURNDATA_MASK (0xffffffff)
 
 /* Status/Control Masks */
 #define TX_EHIP_DMA_CSR_BUSY_MASK   (1<<0)

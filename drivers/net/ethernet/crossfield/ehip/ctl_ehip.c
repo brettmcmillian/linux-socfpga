@@ -76,6 +76,7 @@ MODULE_PARM_DESC(dma_tx_num, "Number of descriptors in the TX list");
  * headroom for alignment is 2 bytes, 2048 is just fine.
  */
 #define EHIP_RXDMABUFFER_SIZE	2048
+#define MM_TRANSFER_SIZE		16
 #define ALIGNMENT_SIZE			64
 
 /* Allow network stack to resume queueing packets after we've
@@ -280,6 +281,8 @@ static int ctl_ehip_rx(struct ctl_ehip_private *priv, int limit)
 	struct sk_buff *skb;
 	unsigned int entry = priv->rx_cons % priv->rx_ring_size;
 	u32 pktlength;
+	unsigned char * data;
+	int length_offset = EHIP_RXDMABUFFER_SIZE - MM_TRANSFER_SIZE;
 
 	/* Check for count < limit first as get_rx_status is changing
 	* the response-fifo so we must process the next packet
@@ -287,20 +290,7 @@ static int ctl_ehip_rx(struct ctl_ehip_private *priv, int limit)
 	* (reading the last byte of the response pops the value from the fifo.)
 	*/
 	while ((count < limit) &&
-	    ((pktlength = priv->dmaops->get_rx_status(priv)) != 0)) {
-
-		if (pktlength > priv->dev->mtu) {
-			netdev_err(priv->dev,
-				   "Received packet greater than MTU of length %08X\n",
-				   pktlength);
-			break;
-		}
-
-		/* DMA transfer from 100G HIP starts with 2 aditional bytes for
-		 * IP payload alignment. Status returned by get_rx_status()
-		 * contains DMA transfer length. Packet is 2 bytes shorter.
-		 */
-		//pktlength -= 2;
+	    (priv->dmaops->get_rx_status(priv))) {
 
 		count++;
 		next_entry = (++priv->rx_cons) % priv->rx_ring_size;
@@ -314,6 +304,17 @@ static int ctl_ehip_rx(struct ctl_ehip_private *priv, int limit)
 			break;
 		}
 		priv->rx_ring[entry].skb = NULL;
+
+		data = (unsigned char *)skb->data;
+
+		pktlength = ((u32)(data[length_offset]) & 0xFF) + (((u32)(data[length_offset+1]) << 8) & 0xFF00);
+
+		if (pktlength > priv->dev->mtu) {
+			netdev_err(priv->dev,
+				   "Received packet greater than MTU of length %08X\n",
+				   pktlength);
+			break;
+		}
 
 		skb_put(skb, pktlength);
 
@@ -459,6 +460,7 @@ static irqreturn_t crossfield_isr(int irq, void *dev_id)
 
 	return IRQ_HANDLED;
 }
+
 
 /* Transmit a packet (called by the kernel) using
  * the Crossfield DMA engine. Implies an assumption

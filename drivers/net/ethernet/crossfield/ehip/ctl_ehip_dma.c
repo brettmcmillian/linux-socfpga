@@ -106,8 +106,14 @@ u32 ctl_ehip_dma_tx_completions(struct ctl_ehip_private *priv)
 	u32 inuse;
 	u32 status;
 
-	ready = priv->tx_prod - priv->tx_cons;
+	/* Get number of sent descriptors */
+	inuse = readl(&priv->tx_dma_desc->fill_level);
 
+	if (inuse) /* Tx FIFO is not empty */
+		ready = max_t(int, priv->tx_prod - priv->tx_cons - inuse - 1, 0);
+	else 
+		ready = priv->tx_prod - priv->tx_cons;
+	
 	return ready;
 }
 
@@ -131,11 +137,11 @@ void ctl_ehip_dma_add_rx_desc(struct ctl_ehip_private *priv,
  */
 u32 ctl_ehip_dma_rx_status(struct ctl_ehip_private *priv)
 {
-	u32 pktlength = 0;
+	u32 completion = 0;
 
 	if (readl(&priv->rx_dma_csr->busy) != RX_EHIP_DMA_CSR_BUSY_MASK) {
-		pktlength = readl(&priv->rx_dma_csr->bytes_transferred);
+		completion = 1;
 		writel(RX_EHIP_DMA_CSR_START_MASK, &priv->rx_dma_csr->start);
 	}
-	return pktlength;
+	return completion;
 }
