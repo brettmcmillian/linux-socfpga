@@ -527,6 +527,8 @@ struct crossfield_dmaops {
 	void (*uninit_dma)(struct ctl_ehip_private *);
 	void (*start_rxdma)(struct ctl_ehip_private *);
 	void (*start_txdma)(struct ctl_ehip_private *);
+	void (*start_rxdisp)(struct ctl_ehip_private *);
+	void (*start_txdisp)(struct ctl_ehip_private *);
 };
 
 /* This structure is private to each device.

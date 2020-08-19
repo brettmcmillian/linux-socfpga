@@ -52,6 +52,22 @@ void ctl_ehip_dma_start_txdma(struct ctl_ehip_private *priv)
 		writel(TX_EHIP_DMA_CSR_START_MASK, &priv->tx_dma_csr->start);
 }
 
+void ctl_ehip_dma_start_rxdisp(struct ctl_ehip_private *priv)
+{
+	if ((readl(&priv->rx_dma_csr->busy) & 0x1) == 0) {
+		writel(0, &priv->rx_dma_desc->length);
+		writel(RX_DISPATCHER_CSR_START_MASK, &priv->rx_dma_csr->start);
+	}
+}
+
+void ctl_ehip_dma_start_txdisp(struct ctl_ehip_private *priv)
+{
+	if ((readl(&priv->tx_dma_desc->busy) & 0x1) == 0) {
+		writel(0, &priv->tx_dma_desc->length);
+		writel(TX_DISPATCHER_CSR_START_MASK, &priv->tx_dma_desc->start);
+	}
+}
+
 void ctl_ehip_dma_reset(struct ctl_ehip_private *priv)
 {
 	//No software reset for HLS core
@@ -125,7 +141,7 @@ int ctl_ehip_dma_tx_buffer(struct ctl_ehip_private *priv, struct ctl_ehip_buffer
 u32 ctl_ehip_dma_tx_completions(struct ctl_ehip_private *priv)
 {
 	u32 ready = 0;
-	u32 inuse;
+	u32 inuse = 0;
 	u32 status;
 
 	/* Get number of sent descriptors */
@@ -136,6 +152,8 @@ u32 ctl_ehip_dma_tx_completions(struct ctl_ehip_private *priv)
 	else 
 		ready = priv->tx_prod - priv->tx_cons;
 	
+	ctl_ehip_dma_start_txdisp(priv);
+
 	return ready;
 }
 
@@ -163,8 +181,7 @@ u32 ctl_ehip_dma_rx_status(struct ctl_ehip_private *priv)
 
 	fill_level = readl(&priv->rx_dma_desc->fill_level);
 
-	writel(0, &priv->rx_dma_desc->length);
-	writel(RX_DISPATCHER_CSR_START_MASK, &priv->rx_dma_desc->start);
+	ctl_ehip_dma_start_rxdisp(priv);
 	
 	return fill_level;
 }

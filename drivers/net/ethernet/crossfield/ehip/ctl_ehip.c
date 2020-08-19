@@ -406,6 +406,8 @@ static int ctl_ehip_poll(struct napi_struct *napi, int budget)
 	int rxcomplete = 0;
 	unsigned long int flags;
 
+	ctl_ehip_tx_complete(priv);
+
 	rxcomplete = ctl_ehip_rx(priv, budget);
 
 	if (rxcomplete < budget) {
@@ -418,9 +420,11 @@ static int ctl_ehip_poll(struct napi_struct *napi, int budget)
 
 		spin_lock_irqsave(&priv->rxdma_irq_lock, flags);
 		priv->dmaops->enable_rxirq(priv);
+		priv->dmaops->enable_txirq(priv);
 		spin_unlock_irqrestore(&priv->rxdma_irq_lock, flags);
 
 		priv->dmaops->start_rxdma(priv);
+		priv->dmaops->start_txdma(priv);
 	}
 
 	return rxcomplete;
@@ -451,29 +455,14 @@ static irqreturn_t crossfield_isr(int irq, void *dev_id)
 	priv->dmaops->clear_txirq(priv);
 	spin_unlock(&priv->rxdma_irq_lock);
 
-	if (rx_status == 1) {
-
-		if (likely(napi_schedule_prep(&priv->napi))) {
-			spin_lock(&priv->rxdma_irq_lock);
-			priv->dmaops->disable_rxirq(priv);
-			
-			spin_unlock(&priv->rxdma_irq_lock);
-			__napi_schedule(&priv->napi);
-		}
-	}
-
-	if (tx_status == 1) {
+	if (likely(napi_schedule_prep(&priv->napi))) {
 		spin_lock(&priv->rxdma_irq_lock);
+		priv->dmaops->disable_rxirq(priv);
 		priv->dmaops->disable_txirq(priv);
 		spin_unlock(&priv->rxdma_irq_lock);
-
-		ctl_ehip_tx_complete(priv);
-
-		spin_lock_irqsave(&priv->rxdma_irq_lock, flags);
-		priv->dmaops->enable_txirq(priv);
-		spin_unlock_irqrestore(&priv->rxdma_irq_lock, flags);
-
-		priv->dmaops->start_txdma(priv);
+		priv->dmaops->start_rxdisp(priv);
+		priv->dmaops->start_txdisp(priv);
+		__napi_schedule(&priv->napi);
 	}
 
 	return IRQ_HANDLED;
@@ -1340,6 +1329,8 @@ static const struct crossfield_dmaops ctl_dtype_ehip_dma = {
 	.uninit_dma = ctl_ehip_dma_uninitialize,
 	.start_rxdma = ctl_ehip_dma_start_rxdma,
 	.start_txdma = ctl_ehip_dma_start_txdma,
+	.start_rxdisp = ctl_ehip_dma_start_rxdisp,
+	.start_txdisp = ctl_ehip_dma_start_txdisp,
 };
 
 static const struct of_device_id ctl_ehip_ids[] = {

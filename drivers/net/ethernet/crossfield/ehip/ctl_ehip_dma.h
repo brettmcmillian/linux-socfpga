@@ -40,5 +40,7 @@ int ctl_ehip_dma_initialize(struct ctl_ehip_private *);
 void ctl_ehip_dma_uninitialize(struct ctl_ehip_private *);
 void ctl_ehip_dma_start_rxdma(struct ctl_ehip_private *);
 void ctl_ehip_dma_start_txdma(struct ctl_ehip_private *);
+void ctl_ehip_dma_start_rxdisp(struct ctl_ehip_private *priv);
+void ctl_ehip_dma_start_txdisp(struct ctl_ehip_private *priv);
 
 #endif /*  __CTL_EHIP_DMA_H__ */
