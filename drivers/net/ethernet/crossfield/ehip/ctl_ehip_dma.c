@@ -89,9 +89,26 @@ void ctl_ehip_dma_clear_txirq(struct ctl_ehip_private *priv)
 	writel(TX_EHIP_DMA_CSR_INTERRUPT_STATUS_MASK, &priv->tx_dma_csr->status);
 }
 
-void ctl_ehip_dma_rxirq_status(struct ctl_ehip_private *priv)
+int ctl_ehip_dma_rxirq_status(struct ctl_ehip_private *priv)
 {
-	writel(TX_EHIP_DMA_CSR_INTERRUPT_STATUS_MASK, &priv->tx_dma_csr->status);
+	int status = 0;
+	status = readl(&priv->rx_dma_csr->status);
+
+	if (status & RX_EHIP_DMA_CSR_DONE_MASK)
+		return 1;
+
+	return 0;
+}
+
+int ctl_ehip_dma_txirq_status(struct ctl_ehip_private *priv)
+{
+	int status = 0;
+	status = readl(&priv->tx_dma_csr->status);
+
+	if (status & RX_EHIP_DMA_CSR_DONE_MASK)
+		return 1;
+
+	return 0;
 }
 
 /* return 0 to indicate transmit is pending */

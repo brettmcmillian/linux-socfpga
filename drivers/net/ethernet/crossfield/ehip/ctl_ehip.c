@@ -434,6 +434,7 @@ static irqreturn_t crossfield_isr(int irq, void *dev_id)
 	struct net_device *dev = dev_id;
 	struct ctl_ehip_private *priv;
 	unsigned long int flags;
+	int rx_status, tx_status;
 
 	if (unlikely(!dev)) {
 		pr_err("%s: invalid dev pointer\n", __func__);
@@ -441,13 +442,16 @@ static irqreturn_t crossfield_isr(int irq, void *dev_id)
 	}
 	priv = netdev_priv(dev);
 
+	rx_status = priv->dmaops->rxirq_status(priv);
+	tx_status = priv->dmaops->txirq_status(priv);
+
 	spin_lock(&priv->rxdma_irq_lock);
 	/* Clear IRQ Status Registers */
 	priv->dmaops->clear_rxirq(priv);
 	priv->dmaops->clear_txirq(priv);
 	spin_unlock(&priv->rxdma_irq_lock);
 
-	if (irq == &priv->rx_irq) {
+	if (rx_status == 1) {
 
 		if (likely(napi_schedule_prep(&priv->napi))) {
 			spin_lock(&priv->rxdma_irq_lock);
@@ -456,7 +460,9 @@ static irqreturn_t crossfield_isr(int irq, void *dev_id)
 			spin_unlock(&priv->rxdma_irq_lock);
 			__napi_schedule(&priv->napi);
 		}
-	} else {
+	}
+
+	if (tx_status == 1) {
 		spin_lock(&priv->rxdma_irq_lock);
 		priv->dmaops->disable_txirq(priv);
 		spin_unlock(&priv->rxdma_irq_lock);
@@ -1324,6 +1330,8 @@ static const struct crossfield_dmaops ctl_dtype_ehip_dma = {
 	.disable_rxirq = ctl_ehip_dma_disable_rxirq,
 	.clear_txirq = ctl_ehip_dma_clear_txirq,
 	.clear_rxirq = ctl_ehip_dma_clear_rxirq,
+	.rxirq_status = ctl_ehip_dma_rxirq_status,
+	.txirq_status = ctl_ehip_dma_txirq_status,
 	.tx_buffer = ctl_ehip_dma_tx_buffer,
 	.tx_completions = ctl_ehip_dma_tx_completions,
 	.add_rx_desc = ctl_ehip_dma_add_rx_desc,

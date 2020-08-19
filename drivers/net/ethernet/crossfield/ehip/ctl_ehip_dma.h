@@ -30,6 +30,8 @@ void ctl_ehip_dma_disable_rxirq(struct ctl_ehip_private *);
 void ctl_ehip_dma_disable_txirq(struct ctl_ehip_private *);
 void ctl_ehip_dma_clear_rxirq(struct ctl_ehip_private *);
 void ctl_ehip_dma_clear_txirq(struct ctl_ehip_private *);
+int ctl_ehip_dma_rxirq_status(struct ctl_ehip_private *priv);
+int ctl_ehip_dma_txirq_status(struct ctl_ehip_private *priv);
 u32 ctl_ehip_dma_tx_completions(struct ctl_ehip_private *);
 void ctl_ehip_dma_add_rx_desc(struct ctl_ehip_private *, struct ctl_ehip_buffer *);
 int ctl_ehip_dma_tx_buffer(struct ctl_ehip_private *, struct ctl_ehip_buffer *);

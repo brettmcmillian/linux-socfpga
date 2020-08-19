@@ -517,6 +517,8 @@ struct crossfield_dmaops {
 	void (*disable_rxirq)(struct ctl_ehip_private *);
 	void (*clear_txirq)(struct ctl_ehip_private *);
 	void (*clear_rxirq)(struct ctl_ehip_private *);
+	int (*rxirq_status)(struct ctl_ehip_private *);
+	int (*txirq_status)(struct ctl_ehip_private *);
 	int (*tx_buffer)(struct ctl_ehip_private *, struct ctl_ehip_buffer *);
 	u32 (*tx_completions)(struct ctl_ehip_private *);
 	void (*add_rx_desc)(struct ctl_ehip_private *, struct ctl_ehip_buffer *);
