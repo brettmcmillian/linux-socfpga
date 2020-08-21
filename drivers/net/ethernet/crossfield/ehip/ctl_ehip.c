@@ -75,7 +75,7 @@ MODULE_PARM_DESC(dma_tx_num, "Number of descriptors in the TX list");
  * 1518, a VLAN header would be additional 4 bytes and additional
  * headroom for alignment is 2 bytes, 2048 is just fine.
  */
-#define EHIP_RXDMABUFFER_SIZE	2048
+#define EHIP_RXDMABUFFER_SIZE	16384
 #define MM_TRANSFER_SIZE		16
 #define ALIGNMENT_SIZE			64
 
