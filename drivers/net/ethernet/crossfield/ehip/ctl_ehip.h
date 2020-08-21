@@ -536,7 +536,8 @@ struct crossfield_dmaops {
 struct ctl_ehip_private {
 	struct net_device *dev;
 	struct device *device;
-	struct napi_struct napi;
+	struct napi_struct rx_napi;
+	struct napi_struct tx_napi;
 
 	/* Ethernet Reconfiguration Address Space */
 	struct ctl_ehip_ethreconfig __iomem *eth_reconfig;
@@ -606,6 +607,8 @@ struct ctl_ehip_private {
 	spinlock_t tx_lock;
 	/* Rx DMA & interrupt control protection */
 	spinlock_t rxdma_irq_lock;
+	/* Tx DMA & interrupt control protection */
+	spinlock_t txdma_irq_lock;
 
 	/* PHY */
 	struct phylink *phy_link;

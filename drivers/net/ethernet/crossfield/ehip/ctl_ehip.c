@@ -290,7 +290,7 @@ static int ctl_ehip_rx(struct ctl_ehip_private *priv, int limit)
 	* (reading the last byte of the response pops the value from the fifo.)
 	*/
 	while ((count < limit) &&
-	    (priv->dmaops->get_rx_status(priv) != RX_DESCRIPTORS)) {
+	    (priv->dmaops->get_rx_status(priv) < RX_DESCRIPTORS)) {
 
 		count++;
 		next_entry = (++priv->rx_cons) % priv->rx_ring_size;
@@ -333,7 +333,7 @@ static int ctl_ehip_rx(struct ctl_ehip_private *priv, int limit)
 		skb->protocol = eth_type_trans(skb, priv->dev);
 		skb_checksum_none_assert(skb);
 
-		napi_gro_receive(&priv->napi, skb);
+		napi_gro_receive(&priv->rx_napi, skb);
 
 		priv->dev->stats.rx_packets++;
 		priv->dev->stats.rx_bytes += pktlength;
@@ -393,24 +393,25 @@ static int ctl_ehip_tx_complete(struct ctl_ehip_private *priv)
 
 	spin_unlock(&priv->tx_lock);
 
+	//printk("TX Complete\n");
+
 	return txcomplete;
 }
 
 /*
  * NAPI polling function
  */
-static int ctl_ehip_poll(struct napi_struct *napi, int budget)
+static int ctl_ehip_rx_poll(struct napi_struct *napi, int budget)
 {
 	struct ctl_ehip_private *priv =
-			container_of(napi, struct ctl_ehip_private, napi);
+			container_of(napi, struct ctl_ehip_private, rx_napi);
 	int rxcomplete = 0;
 	unsigned long int flags;
-
-	ctl_ehip_tx_complete(priv);
 
 	rxcomplete = ctl_ehip_rx(priv, budget);
 
 	if (rxcomplete < budget) {
+		//printk("Completed receiving packets\n");
 
 		napi_complete_done(napi, rxcomplete);
 
@@ -419,26 +420,28 @@ static int ctl_ehip_poll(struct napi_struct *napi, int budget)
 			   rxcomplete, budget);
 
 		spin_lock_irqsave(&priv->rxdma_irq_lock, flags);
+		priv->dmaops->clear_rxirq(priv);
 		priv->dmaops->enable_rxirq(priv);
-		priv->dmaops->enable_txirq(priv);
 		spin_unlock_irqrestore(&priv->rxdma_irq_lock, flags);
 
+		//Update the RX fill level
+		priv->dmaops->start_rxdisp(priv);
 		priv->dmaops->start_rxdma(priv);
-		priv->dmaops->start_txdma(priv);
 	}
 
+	//printk("rxcomplete = %d", rxcomplete);
 	return rxcomplete;
 }
 
 /*
  * DMA TX & RX FIFO interrupt routing
  */
-static irqreturn_t crossfield_isr(int irq, void *dev_id)
+static irqreturn_t crossfield_rx_isr(int irq, void *dev_id)
 {
 	struct net_device *dev = dev_id;
 	struct ctl_ehip_private *priv;
-	unsigned long int flags;
-	int rx_status, tx_status;
+
+	//printk("RX IRQ\n");
 
 	if (unlikely(!dev)) {
 		pr_err("%s: invalid dev pointer\n", __func__);
@@ -446,28 +449,86 @@ static irqreturn_t crossfield_isr(int irq, void *dev_id)
 	}
 	priv = netdev_priv(dev);
 
-	rx_status = priv->dmaops->rxirq_status(priv);
-	tx_status = priv->dmaops->txirq_status(priv);
+	priv->dmaops->start_rxdisp(priv);
 
 	spin_lock(&priv->rxdma_irq_lock);
 	/* Clear IRQ Status Registers */
 	priv->dmaops->clear_rxirq(priv);
-	priv->dmaops->clear_txirq(priv);
 	spin_unlock(&priv->rxdma_irq_lock);
 
-	if (likely(napi_schedule_prep(&priv->napi))) {
+	if (likely(napi_schedule_prep(&priv->rx_napi))) {
 		spin_lock(&priv->rxdma_irq_lock);
 		priv->dmaops->disable_rxirq(priv);
-		priv->dmaops->disable_txirq(priv);
 		spin_unlock(&priv->rxdma_irq_lock);
-		priv->dmaops->start_rxdisp(priv);
-		priv->dmaops->start_txdisp(priv);
-		__napi_schedule(&priv->napi);
+		priv->dmaops->start_rxdma(priv);
+		__napi_schedule(&priv->rx_napi);
 	}
 
 	return IRQ_HANDLED;
 }
 
+/*
+ * NAPI polling function
+ */
+static int ctl_ehip_tx_poll(struct napi_struct *napi, int budget)
+{
+	struct ctl_ehip_private *priv =
+			container_of(napi, struct ctl_ehip_private, tx_napi);
+	int txcomplete = 0;
+	unsigned long int flags;
+
+	txcomplete = ctl_ehip_tx_complete(priv);
+
+	if (txcomplete < budget) {
+
+		napi_complete_done(napi, txcomplete);
+
+		netdev_dbg(priv->dev,
+			   "NAPI Complete, did %d packets with budget %d\n",
+			   txcomplete, budget);
+
+		spin_lock_irqsave(&priv->txdma_irq_lock, flags);
+		priv->dmaops->clear_txirq(priv);
+		priv->dmaops->enable_txirq(priv);
+		spin_unlock_irqrestore(&priv->txdma_irq_lock, flags);
+
+		priv->dmaops->start_txdma(priv);
+	}
+
+	return txcomplete;
+}
+
+/*
+ * DMA TX & RX FIFO interrupt routing
+ */
+static irqreturn_t crossfield_tx_isr(int irq, void *dev_id)
+{
+	struct net_device *dev = dev_id;
+	struct ctl_ehip_private *priv;
+
+	//printk("TX IRQ\n");
+
+	if (unlikely(!dev)) {
+		pr_err("%s: invalid dev pointer\n", __func__);
+		return IRQ_NONE;
+	}
+	priv = netdev_priv(dev);
+
+	spin_lock(&priv->txdma_irq_lock);
+	/* Clear IRQ Status Registers */
+	priv->dmaops->clear_txirq(priv);
+	spin_unlock(&priv->txdma_irq_lock);
+
+	if (likely(napi_schedule_prep(&priv->tx_napi))) {
+		spin_lock(&priv->txdma_irq_lock);
+		priv->dmaops->disable_txirq(priv);
+		spin_unlock(&priv->txdma_irq_lock);
+		priv->dmaops->start_txdma(priv);
+		__napi_schedule(&priv->tx_napi);
+	}
+
+	return IRQ_HANDLED;
+}
 
 /* Transmit a packet (called by the kernel) using
  * the Crossfield DMA engine. Implies an assumption
@@ -896,7 +957,7 @@ static int ctl_ehip_open(struct net_device *dev)
 
 
 	/* Register RX interrupt */
-	ret = request_irq(priv->rx_irq, crossfield_isr, IRQF_SHARED,
+	ret = request_irq(priv->rx_irq, crossfield_rx_isr, 0,
 			  dev->name, dev);
 	if (ret) {
 		netdev_err(dev, "Unable to register RX interrupt %d\n",
@@ -905,7 +966,7 @@ static int ctl_ehip_open(struct net_device *dev)
 	}
 
 	/* Register TX interrupt */
-	ret = request_irq(priv->tx_irq, crossfield_isr, IRQF_SHARED,
+	ret = request_irq(priv->tx_irq, crossfield_tx_isr, 0,
 			  dev->name, dev);
 	if (ret) {
 		netdev_err(dev, "Unable to register TX interrupt %d\n",
@@ -916,9 +977,7 @@ static int ctl_ehip_open(struct net_device *dev)
 	/* Enable DMA interrupts */
 	spin_lock_irqsave(&priv->rxdma_irq_lock, flags);
 	priv->dmaops->clear_rxirq(priv);
-	priv->dmaops->clear_txirq(priv);
 	priv->dmaops->enable_rxirq(priv);
-	priv->dmaops->enable_txirq(priv);
 
 	/* Setup RX descriptor chain */
 	for (i = 0; i < priv->rx_ring_size; i++)
@@ -926,10 +985,16 @@ static int ctl_ehip_open(struct net_device *dev)
 
 	spin_unlock_irqrestore(&priv->rxdma_irq_lock, flags);
 
+	spin_lock_irqsave(&priv->txdma_irq_lock, flags);
+	priv->dmaops->clear_txirq(priv);
+	priv->dmaops->enable_txirq(priv);
+	spin_unlock_irqrestore(&priv->txdma_irq_lock, flags);
+
 	if (priv->phy_link)
 		phylink_start(priv->phy_link);
 
-	napi_enable(&priv->napi);
+	napi_enable(&priv->rx_napi);
+	napi_enable(&priv->tx_napi);
 	netif_start_queue(dev);
 
 	priv->dmaops->start_rxdma(priv);
@@ -944,6 +1009,7 @@ static int ctl_ehip_open(struct net_device *dev)
 
 tx_request_irq_error:
 	free_irq(priv->rx_irq, dev);
+	free_irq(priv->tx_irq, dev);
 init_error:
 	free_skbufs(dev);
 alloc_skbuf_error:
@@ -960,7 +1026,8 @@ static int ctl_ehip_shutdown(struct net_device *dev)
 	unsigned long int flags;
 
 	netif_stop_queue(dev);
-	napi_disable(&priv->napi);
+	napi_disable(&priv->rx_napi);
+	napi_disable(&priv->tx_napi);
 
 	if (priv->phy_link)
 		phylink_stop(priv->phy_link);
@@ -968,8 +1035,11 @@ static int ctl_ehip_shutdown(struct net_device *dev)
 	/* Disable DMA interrupts */
 	spin_lock_irqsave(&priv->rxdma_irq_lock, flags);
 	priv->dmaops->disable_rxirq(priv);
-	priv->dmaops->disable_txirq(priv);
 	spin_unlock_irqrestore(&priv->rxdma_irq_lock, flags);
+
+	spin_lock_irqsave(&priv->txdma_irq_lock, flags);
+	priv->dmaops->disable_txirq(priv);
+	spin_unlock_irqrestore(&priv->txdma_irq_lock, flags);
 
 	/* Free the IRQ lines */
 	free_irq(priv->rx_irq, dev);
@@ -1242,11 +1312,13 @@ static int ctl_ehip_probe(struct platform_device *pdev)
 	ndev->features |= NETIF_F_HW_VLAN_CTAG_RX;
 
 	/* setup NAPI interface */
-	netif_napi_add(ndev, &priv->napi, ctl_ehip_poll, NAPI_POLL_WEIGHT);
+	netif_napi_add(ndev, &priv->rx_napi, ctl_ehip_rx_poll, NAPI_POLL_WEIGHT);
+	netif_napi_add(ndev, &priv->tx_napi, ctl_ehip_tx_poll, NAPI_POLL_WEIGHT);
 
 	spin_lock_init(&priv->mac_cfg_lock);
 	spin_lock_init(&priv->tx_lock);
 	spin_lock_init(&priv->rxdma_irq_lock);
+	spin_lock_init(&priv->txdma_irq_lock);
 
 	netif_carrier_off(ndev);
 	ret = register_netdev(ndev);
@@ -1280,7 +1352,8 @@ static int ctl_ehip_probe(struct platform_device *pdev)
 err_init_phy:
 	unregister_netdev(ndev);
 err_register_netdev:
-	netif_napi_del(&priv->napi);
+	netif_napi_del(&priv->rx_napi);
+	netif_napi_del(&priv->tx_napi);
 err_free_netdev:
 	free_netdev(ndev);
 	return ret;

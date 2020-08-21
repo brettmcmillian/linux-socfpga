@@ -42,27 +42,27 @@ void ctl_ehip_dma_uninitialize(struct ctl_ehip_private *priv)
 
 void ctl_ehip_dma_start_rxdma(struct ctl_ehip_private *priv)
 {
-	if ((readl(&priv->rx_dma_csr->busy) & 0x1) == 0)
+	if (readl(&priv->rx_dma_csr->busy) != RX_EHIP_DMA_CSR_BUSY_MASK)
 		writel(RX_EHIP_DMA_CSR_START_MASK, &priv->rx_dma_csr->start);
 }
 
 void ctl_ehip_dma_start_txdma(struct ctl_ehip_private *priv)
 {
-	if ((readl(&priv->tx_dma_csr->busy) & 0x1) == 0)
+	if (readl(&priv->tx_dma_csr->busy) != TX_EHIP_DMA_CSR_BUSY_MASK)
 		writel(TX_EHIP_DMA_CSR_START_MASK, &priv->tx_dma_csr->start);
 }
 
 void ctl_ehip_dma_start_rxdisp(struct ctl_ehip_private *priv)
 {
-	if ((readl(&priv->rx_dma_csr->busy) & 0x1) == 0) {
+	if (readl(&priv->rx_dma_desc->busy) != RX_DISPATCHER_CSR_BUSY_MASK) {
 		writel(0, &priv->rx_dma_desc->length);
-		writel(RX_DISPATCHER_CSR_START_MASK, &priv->rx_dma_csr->start);
+		writel(RX_DISPATCHER_CSR_START_MASK, &priv->rx_dma_desc->start);
 	}
 }
 
 void ctl_ehip_dma_start_txdisp(struct ctl_ehip_private *priv)
 {
-	if ((readl(&priv->tx_dma_desc->busy) & 0x1) == 0) {
+	if (readl(&priv->tx_dma_desc->busy) != TX_DISPATCHER_CSR_BUSY_MASK) {
 		writel(0, &priv->tx_dma_desc->length);
 		writel(TX_DISPATCHER_CSR_START_MASK, &priv->tx_dma_desc->start);
 	}
@@ -152,8 +152,6 @@ u32 ctl_ehip_dma_tx_completions(struct ctl_ehip_private *priv)
 	else 
 		ready = priv->tx_prod - priv->tx_cons;
 	
-	ctl_ehip_dma_start_txdisp(priv);
-
 	return ready;
 }
 
@@ -183,5 +181,6 @@ u32 ctl_ehip_dma_rx_status(struct ctl_ehip_private *priv)
 
 	ctl_ehip_dma_start_rxdisp(priv);
 	
+	//printk("RX fill level = %d", fill_level);
 	return fill_level;
 }
