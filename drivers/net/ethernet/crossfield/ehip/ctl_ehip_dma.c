@@ -178,8 +178,6 @@ u32 ctl_ehip_dma_rx_status(struct ctl_ehip_private *priv)
 	u32 fill_level;
 
 	fill_level = readl(&priv->rx_dma_desc->fill_level);
-
-	ctl_ehip_dma_start_rxdisp(priv);
 	
 	//printk("RX fill level = %d", fill_level);
 	return fill_level;

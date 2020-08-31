@@ -272,6 +272,11 @@ static inline void ctl_ehip_rx_vlan(struct net_device *dev, struct sk_buff *skb)
 	}
 }
 
+static ctl_ehip_pfc(struct ctl_ehip_private *priv)
+{
+	
+}
+
 /* Receive a packet: retrieve and pass over to upper levels
  */
 static int ctl_ehip_rx(struct ctl_ehip_private *priv, int limit)
@@ -284,13 +289,17 @@ static int ctl_ehip_rx(struct ctl_ehip_private *priv, int limit)
 	unsigned char * data;
 	int length_offset = EHIP_RXDMABUFFER_SIZE - MM_TRANSFER_SIZE;
 
+	int completions = RX_DESCRIPTORS - priv->dmaops->get_rx_status(priv);
+
 	/* Check for count < limit first as get_rx_status is changing
 	* the response-fifo so we must process the next packet
 	* after calling get_rx_status if a response is pending.
 	* (reading the last byte of the response pops the value from the fifo.)
 	*/
-	while ((count < limit) &&
-	    (priv->dmaops->get_rx_status(priv) < RX_DESCRIPTORS)) {
+	while ((count < limit) && (completions > 0)) {
+		completions--;
+		if (completions == 0)
+			priv->dmaops->start_rxdisp(priv);
 
 		count++;
 		next_entry = (++priv->rx_cons) % priv->rx_ring_size;
@@ -341,6 +350,9 @@ static int ctl_ehip_rx(struct ctl_ehip_private *priv, int limit)
 		entry = next_entry;
 
 		ctl_ehip_rx_refill(priv);
+
+		if (completions == 0)
+			completions = RX_DESCRIPTORS - priv->dmaops->get_rx_status(priv);
 	}
 
 	return count;
